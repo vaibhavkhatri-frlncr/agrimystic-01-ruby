@@ -1,0 +1,2 @@
+class SmsOtpSerializer < BaseSerializer
+end
