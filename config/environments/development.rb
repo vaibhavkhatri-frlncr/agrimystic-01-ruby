@@ -60,11 +60,11 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
-  # Rails.configuration.x.sms.provider
+  Rails.configuration.x.sms.provider
   config.x.sms.provider = :twilio.freeze
   config.twilio = {
-    account_sid: ENV['ACCOUNT_SID'],
-    auth_token: ENV['AUTH_TOKEN'],
-    phone_number: ENV['PHONE_NUMBER']
+    account_sid: ENV['TWILIO_ACCOUNT_SID'],
+    auth_token: ENV['TWILIO_AUTH_TOKEN'],
+    phone_number: ENV['TWILIO_PHONE_NUMBER']
   }
 end

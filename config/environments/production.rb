@@ -111,8 +111,8 @@ Rails.application.configure do
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
   config.x.sms.provider = :twilio.freeze
   config.twilio = {
-    account_sid: ENV['ACCOUNT_SID'],
-    auth_token: ENV['AUTH_TOKEN'],
-    phone_number: ENV['PHONE_NUMBER']
+    account_sid: ENV['TWILIO_ACCOUNT_SID'],
+    auth_token: ENV['TWILIO_AUTH_TOKEN'],
+    phone_number: ENV['TWILIO_PHONE_NUMBER']
   }
 end
