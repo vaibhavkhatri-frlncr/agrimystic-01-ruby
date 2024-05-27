@@ -1,6 +1,8 @@
 class Product < ApplicationRecord
   self.table_name = :products
 
+  include RansackSearchable
+
   belongs_to :category
   has_many :product_variants, dependent: :destroy
 
@@ -11,7 +13,7 @@ class Product < ApplicationRecord
   validates :name, :description, presence: true
   validates :code, uniqueness: true, presence: true
   validate :must_have_at_least_one_product_variant
-  validates_presence_of :display_picture, :message => 'display picture must be attached'
+  validates_presence_of :display_picture, message: 'Display picture must be attached.'
   
   before_update :check_product_variants_before_update
   after_save :calculate_product_total_price
@@ -19,7 +21,7 @@ class Product < ApplicationRecord
   private
 
   def must_have_at_least_one_product_variant
-    errors.add(:base, 'Product must have at least one product variant') if product_variants.empty?
+    errors.add(:base, 'Product must have at least one product variant.') if product_variants.empty?
   end
 
   def calculate_product_total_price
@@ -28,7 +30,7 @@ class Product < ApplicationRecord
   end
 
   def check_product_variants_before_update
-    variants_to_destroy = product_variants.count { |v| v.marked_for_destruction? }
+    variants_to_destroy = product_variants.count(&:marked_for_destruction?)
 
     if variants_to_destroy > 0 && product_variants.reject(&:marked_for_destruction?).empty?
       errors.add(:base, 'Product must have at least one product variant.')

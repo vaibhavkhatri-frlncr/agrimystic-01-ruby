@@ -54,9 +54,10 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # Add gems as per requirements
 gem 'devise'
-gem 'activeadmin'
+gem 'activeadmin', '~> 3.0'
 gem 'phonelib'
 gem 'jwt'
 gem 'jsonapi.rb'
 gem 'wisper'
 gem 'twilio-ruby'
+gem 'aws-sdk-s3'
