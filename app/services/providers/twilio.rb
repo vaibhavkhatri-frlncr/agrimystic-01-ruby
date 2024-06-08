@@ -4,7 +4,7 @@ module Providers
       def send_sms(full_phone_number, text_content)
         client = ::Twilio::REST::Client.new(account_id, auth_token)
         client.messages.create(
-                                from: ENV['TWILIO_PHONE_NUMBER'],
+                                from: from,
                                 to: full_phone_number,
                                 body: text_content
                               )
