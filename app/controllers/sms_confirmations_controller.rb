@@ -28,10 +28,9 @@ class SmsConfirmationsController < ApplicationController
       else
         return render json: { errors: [{ sms_account: 'SmsAccount not found for the given phone number' }] }, status: :unprocessable_entity
       end
-
-      render json: ValidateAvailableSerializer.new(@sms_otp, meta: {
+      render json: ValidateAvailableSerializer.new(sms_account, meta: {
         message: 'Phone Number Confirmed Successfully',
-        token: JsonWebToken.encode(@sms_otp.id)
+        token: JsonWebToken.encode(sms_account.id)
       }).serializable_hash, status: :ok
     else
       render json: { errors: [{ pin: 'Invalid Pin for Phone Number' }] }, status: :unprocessable_entity

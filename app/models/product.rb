@@ -5,16 +5,16 @@ class Product < ApplicationRecord
 
   belongs_to :category
   has_many :product_variants, dependent: :destroy
-
   has_one_attached :display_picture
+  has_many_attached :images
 
   accepts_nested_attributes_for :product_variants, allow_destroy: true
 
-  validates :name, :description, presence: true
+  validates :name, :description, :manufacturer, :dosage, :features, presence: true
   validates :code, uniqueness: true, presence: true
   validate :must_have_at_least_one_product_variant
-  validates_presence_of :display_picture, message: 'Display picture must be attached.'
-  
+  validates_presence_of :display_picture, message: 'display picture must be attached', on: :create
+
   before_update :check_product_variants_before_update
   after_save :calculate_product_total_price
 

@@ -12,7 +12,7 @@ class ValidateAvailableSerializer
   # end
 
   attribute :phone_number do |object|
-    object.is_a?(SmsAccount) ? object.full_phone_number : nil
+    object.is_a?(SmsAccount) ? object.phone_number : nil
   end
 
   attribute :account_exists do |object|

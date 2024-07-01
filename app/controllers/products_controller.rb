@@ -4,7 +4,7 @@ class ProductsController < ApplicationController
   before_action :load_product, only: [:show]
 
   def index
-    products = Product.all
+    products = params[:category_id].present? ? Product.where(category_id: params[:category_id]) : Product.all
     render json: ProductSerializer.new(products), status: :ok
   end
 
