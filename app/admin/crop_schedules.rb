@@ -14,7 +14,7 @@ ActiveAdmin.register CropSchedule do
     f.inputs 'Crop Schedule Details' do
       f.input :crop
       f.input :heading
-      f.input :crop_image, as: :file
+      f.input :crop_image, as: :file, hint: 'Upload crop image'
     end
 
     f.inputs 'Stages' do
