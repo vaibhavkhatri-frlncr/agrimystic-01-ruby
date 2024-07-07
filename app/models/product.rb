@@ -1,8 +1,6 @@
 class Product < ApplicationRecord
   self.table_name = :products
 
-  include RansackSearchable
-
   belongs_to :category
   has_many :product_variants, dependent: :destroy
   has_one_attached :display_picture

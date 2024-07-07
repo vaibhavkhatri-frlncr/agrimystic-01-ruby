@@ -4,23 +4,16 @@ ActiveAdmin.register ProductVariant do
   permit_params :size, :price, :quantity, :product_id
 
   form do |f|
+    f.semantic_errors
+
     f.inputs 'Product Variant Details' do
       f.input :product, include_blank: 'select product'
       f.input :size
       f.input :price
       f.input :quantity
     end
-    f.actions
-  end
 
-  index do
-    selectable_column
-    id_column
-    column :product
-    column :size
-    column :price
-    column :quantity
-    actions
+    f.actions
   end
 
   show do
@@ -33,8 +26,16 @@ ActiveAdmin.register ProductVariant do
       row :created_at
       row :updated_at
     end
-    div do
-      link_to 'Back', admin_product_variants_path, class: 'button'
-    end
+  end
+
+  index do
+    selectable_column
+    id_column
+    column :product
+    column :size
+    column :price
+    column :quantity
+
+    actions
   end
 end

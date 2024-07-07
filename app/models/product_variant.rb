@@ -1,9 +1,8 @@
 class ProductVariant < ApplicationRecord
   self.table_name = :product_variants
 
-  include RansackSearchable
-
   belongs_to :product
+  has_many :cart_product
 
   validates :size, :price, :quantity, presence: true
   validate :validate_quantity_greater_than_zero

@@ -1,5 +1,4 @@
 ActiveAdmin.register Account, as: 'User' do
-
 	menu label: 'User Management'
 
 	permit_params :type, :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, :password, :activated
@@ -14,17 +13,22 @@ ActiveAdmin.register Account, as: 'User' do
 	filter :created_at
 	filter :updated_at
 
-	index title: 'User' do
-		selectable_column
-		id_column
-		column :full_name
-		column :full_phone_number
-		column :address
-		column :activated do |user|
-			user.activated? ? status_tag( 'yes' ) : status_tag( 'no' )
+	form do |f|
+		f.semantic_errors
+
+		f.inputs do
+			f.input :type, as: :hidden, input_html: { value: 'SmsAccount' }
+			f.input :full_name
+			f.input :first_name
+			f.input :last_name
+			f.input :full_phone_number
+			f.input :address
+			f.input :date_of_birth, as: :date_select, start_year: Date.current.year - 100, end_year: Date.current.year
+			f.object.new_record? ? (f.input :password, as: :string) : (f.input :password, as: :string, input_html: { placeholder: '********' })
+			f.input :activated
 		end
-		column :date_of_birth
-		actions
+
+		f.actions
 	end
 
 	show title: 'User Details' do
@@ -40,29 +44,22 @@ ActiveAdmin.register Account, as: 'User' do
 			row :pincode
 			row :activated
 			row :date_of_birth
-			div do
-				link_to 'Back', admin_users_path, class: 'button'
-			end
+			row :created_at
+      row :updated_at
 		end    
 	end
 
-	form do |f|
-		f.semantic_errors
-		f.inputs do
-			f.input :type, as: :hidden, input_html: { value: 'SmsAccount' }
-			f.input :full_name
-			f.input :first_name
-			f.input :last_name
-			f.input :full_phone_number
-			f.input :address
-			f.input :date_of_birth, as: :date_select, start_year: Date.current.year - 100, end_year: Date.current.year
-			if f.object.new_record?
-        f.input :password, as: :string
-      else
-				f.input :password, as: :string, input_html: { placeholder: '********' }
-      end
-			f.input :activated
+	index title: 'User' do
+		selectable_column
+		id_column
+		column :full_name
+		column :full_phone_number
+		column :address
+		column :activated do |user|
+			user.activated? ? status_tag( 'yes' ) : status_tag( 'no' )
 		end
-		f.actions
+		column :date_of_birth
+
+		actions
 	end
 end

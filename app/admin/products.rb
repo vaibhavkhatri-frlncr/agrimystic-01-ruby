@@ -16,6 +16,7 @@ ActiveAdmin.register Product do
 
   form do |f|
     f.semantic_errors
+
     f.inputs 'Product Details' do
       f.input :category, include_blank: 'select category'
       f.input :display_picture, as: :file, hint: 'Upload display picture for product'
@@ -25,9 +26,9 @@ ActiveAdmin.register Product do
       f.input :dosage
       f.input :features
       f.input :description, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
-
       f.input :images, as: :file, hint: 'Upload images for product', input_html: { multiple: true }
     end
+
     f.inputs 'Product Variants' do
       f.has_many :product_variants, heading: 'Product Variants', new_record: 'Add Variant' do |v|
         v.input :size
@@ -36,33 +37,14 @@ ActiveAdmin.register Product do
         v.input :_destroy, as: :boolean, label: 'Remove Variant' unless v.object.new_record?
       end
     end
-    f.actions
-  end
 
-  index do
-    selectable_column
-    id_column
-    column :display_picture do |product|
-      product.display_picture.attached? ? (image_tag url_for(product.display_picture), width: '50') : 'No image attached'
-    end
-    column :category
-    column :name
-    column :code
-    column :manufacturer
-    column :dosage
-    column :features
-    column :total_price
-    actions
-    table_for Product do
-      column('Total Product') { products.count }
-      column('Total Amount') { products.sum(:total_price) }
-    end
+    f.actions
   end
 
   show do
     attributes_table do
       row :display_picture do |product|
-        product.display_picture.attached? ? (image_tag url_for(product.display_picture), size: '100x100') : 'No image attached'
+        product.display_picture.attached? ? (image_tag url_for(product.display_picture), size: '200x200') : 'No image attached'
       end
       row :category
       row :name
@@ -78,6 +60,7 @@ ActiveAdmin.register Product do
       row :created_at
       row :updated_at
     end
+
     panel 'Product Variants' do
       table_for product.product_variants do
         column :size
@@ -86,8 +69,27 @@ ActiveAdmin.register Product do
         column :total_price
       end
     end
-    div do
-      link_to 'Back', admin_products_path, class: 'button'
+  end
+
+  index do
+    selectable_column
+    id_column
+    column :display_picture do |product|
+      product.display_picture.attached? ? (image_tag url_for(product.display_picture), width: '50') : 'No image attached'
+    end
+    column :category
+    column :name
+    column :code
+    column :manufacturer
+    column :dosage
+    column :features
+    column :total_price
+
+    actions
+
+    table_for Product do
+      column('Total Product') { products.count }
+      column('Total Amount') { products.sum(:total_price) }
     end
   end
 end

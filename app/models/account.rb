@@ -1,8 +1,5 @@
 class Account < ApplicationRecord
-	ActiveSupport.run_load_hooks(:account, self)
 	self.table_name = :accounts
-
-	include RansackSearchable
 
 	has_secure_password
 	before_validation :parse_full_phone_number
@@ -12,6 +9,9 @@ class Account < ApplicationRecord
 	before_create :generate_api_key
 
 	has_one_attached :profile_pic
+	has_one :cart, dependent: :destroy
+	has_many :cart_products, through: :cart
+	has_many :products, through: :cart_products
 
 	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: { message: 'Can\'t be blank' }
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
