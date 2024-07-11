@@ -1,0 +1,28 @@
+name: Deploy To Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_KEY }}
+
+    - name: Deploy to VPS
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@91.108.111.95 "
+          cd /usr/local/lsws/Example/html/demo/ && 
+          git fetch origin &&
+          git checkout -B dev origin/deploy_project &&
+          git pull origin deploy_project &&
+          bundle install &&
+          rails db:migrate db:seed &&
+          systemctl restart openlitespeed"
