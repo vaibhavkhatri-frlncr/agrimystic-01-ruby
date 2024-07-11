@@ -26,3 +26,5 @@ jobs:
           bundle install &&
           rails db:migrate db:seed &&
           systemctl restart openlitespeed"
+    - name: Debug SSH Key
+      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
