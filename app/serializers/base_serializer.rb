@@ -5,7 +5,7 @@ class BaseSerializer
 		private
 
 		def base_url
-			ENV['BASE_URL'] || 'http://localhost:3000'
+			Rails.application.config.x.base_url
 		end
 	end
 end

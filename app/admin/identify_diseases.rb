@@ -39,6 +39,8 @@ ActiveAdmin.register IdentifyDisease do
   end
 
   index do
+    selectable_column
+		id_column
     column :disease_name
     column :disease_cause
     column :solution
