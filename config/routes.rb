@@ -18,4 +18,6 @@ Rails.application.routes.draw do
 
   resources :crop_schedules, only: [:index, :show]
   resources :identify_diseases, only: [:index, :show]
+
+  get 'helpline/number', to: 'helplines#show'
 end
