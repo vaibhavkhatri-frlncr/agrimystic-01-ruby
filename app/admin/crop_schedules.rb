@@ -1,7 +1,7 @@
 ActiveAdmin.register CropSchedule do
-  menu parent: 'Crop Management', priority: 1
+  menu parent: 'Crop Management', priority: 2
 
-  permit_params :crop, :heading, :crop_image, stages_attributes: [:id, :title, :_destroy, stage_details_attributes: [:id, :product_to_use, :benefits, :_destroy]]
+  permit_params :crop_id, :heading, stages_attributes: [:id, :title, :_destroy, stage_details_attributes: [:id, :product_to_use, :benefits, :_destroy]]
 
   filter :crop
   filter :heading
@@ -12,9 +12,8 @@ ActiveAdmin.register CropSchedule do
     f.semantic_errors
 
     f.inputs 'Crop Schedule Details' do
-      f.input :crop
+      f.input :crop, include_blank: 'select crop'
       f.input :heading
-      f.input :crop_image, as: :file, hint: 'Upload crop image'
     end
 
     f.inputs 'Stages' do
@@ -34,9 +33,6 @@ ActiveAdmin.register CropSchedule do
     attributes_table do
       row :crop
       row :heading
-      row :crop_image do |crop_schedule|
-        crop_schedule.crop_image.attached? ? (image_tag url_for(crop_schedule.crop_image), size: '200x200') : 'No image attached'
-      end
       row :created_at
       row :updated_at
     end
@@ -59,9 +55,6 @@ ActiveAdmin.register CropSchedule do
     id_column
     column :crop
     column :heading
-    column :crop_image do |crop_schedule|
-      crop_schedule.crop_image.attached? ? (image_tag url_for(crop_schedule.crop_image), size: '50x50') : 'No image attached'
-    end
 
     actions
   end

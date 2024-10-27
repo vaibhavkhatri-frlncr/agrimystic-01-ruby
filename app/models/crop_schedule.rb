@@ -1,21 +1,27 @@
 class CropSchedule < ApplicationRecord
   self.table_name = :crop_schedules
 
+  belongs_to :crop
   has_many :stages, dependent: :destroy
-  has_one_attached :crop_image
 
   accepts_nested_attributes_for :stages, allow_destroy: true
 
-  validates :crop, presence: true
-  validates :heading, presence: true
-  validates_presence_of :crop_image, message: 'crop image must be attached', on: :create
+  validates :heading, presence: true, length: { maximum: 50 }
   validate :must_have_at_least_one_stage
+  validate :check_stage_details_before_update, on: [:create, :update]
+  validate :unique_crop_schedule
 
   before_update :check_stages_before_update
-  validate :check_stage_details_before_update, on: [:create, :update]
-
 
   private
+
+  def unique_crop_schedule
+    if new_record? || crop_id_changed?
+      if CropSchedule.where(crop_id: crop_id).where.not(id: id).exists?
+        errors.add(:base, 'A crop schedule for this crop already exists')
+      end
+    end
+  end
 
   def must_have_at_least_one_stage
     errors.add(:base, 'Crop shedule must have at least one stage') if stages.empty?

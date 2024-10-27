@@ -14,13 +14,13 @@ class ProductVariant < ApplicationRecord
 
   def validate_quantity_greater_than_zero
     if quantity.blank? || !quantity.is_a?(Integer) || quantity <= 0
-      errors.add(:quantity, 'Must be greater than 0.')
+      errors.add(:quantity, 'must be greater than 0')
     end
   end
 
   def validate_price_greater_than_zero
     if price.blank? || price <= 0
-      errors.add(:price, 'must be greater than 0.')
+      errors.add(:price, 'must be greater than 0')
     end
   end
 

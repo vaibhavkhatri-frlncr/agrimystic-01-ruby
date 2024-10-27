@@ -1,10 +1,6 @@
 class CropScheduleSerializer < BaseSerializer
   attributes :crop, :heading
 
-  attribute :crop_image do |crop_schedule|
-    base_url + Rails.application.routes.url_helpers.rails_blob_path(crop_schedule.crop_image, only_path: true) if crop_schedule.crop_image.attached?
-  end
-
   attribute :stages do |crop_schedule|
     crop_schedule.stages.order(:created_at).map do |stage|
       {

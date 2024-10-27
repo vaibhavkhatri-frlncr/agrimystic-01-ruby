@@ -1,8 +1,9 @@
 ActiveAdmin.register IdentifyDisease do
-  menu parent: 'Crop Management', priority: 2
+  menu parent: 'Crop Management', priority: 3
 
-  permit_params :disease_name, :disease_cause, :solution, :products_recommended, :disease_image
+  permit_params :crop_id, :disease_name, :disease_cause, :solution, :products_recommended, :disease_image
 
+  filter :crop
   filter :disease_name
   filter :disease_cause
   filter :solution
@@ -14,6 +15,7 @@ ActiveAdmin.register IdentifyDisease do
     f.semantic_errors
 
     f.inputs do
+      f.input :crop, include_blank: 'select crop'
       f.input :disease_name
       f.input :disease_cause, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
       f.input :solution, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
@@ -26,6 +28,7 @@ ActiveAdmin.register IdentifyDisease do
 
   show do
     attributes_table do
+      row :crop
       row :disease_name
       row :disease_cause
       row :solution
@@ -41,6 +44,7 @@ ActiveAdmin.register IdentifyDisease do
   index do
     selectable_column
 		id_column
+    column :crop
     column :disease_name
     column :disease_cause
     column :solution

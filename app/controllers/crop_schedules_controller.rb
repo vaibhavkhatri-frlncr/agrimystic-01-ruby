@@ -1,24 +1,19 @@
 class CropSchedulesController < ApplicationController
   before_action :validate_json_web_token
-  before_action :load_crop_schedule, only: [:show]
-
-  def index
-    crop_schedules = CropSchedule.all
-    render json: CropScheduleSerializer.new(crop_schedules), status: :ok
-  end
 
   def show
-    return if @crop_schedule.nil?
-    render json: CropScheduleSerializer.new(@crop_schedule), status: :ok
-  end
+    crop = Crop.find_by(id: params[:id])
 
-  private
+    if crop.nil?
+      render json: { errors: [{ message: "Crop with id #{params[:id]} doesn't exist." }] }, status: :not_found
+    else
+      crop_schedule = crop.crop_schedule
 
-  def load_crop_schedule
-    @crop_schedule = CropSchedule.find_by(id: params[:id])
-
-    if @crop_schedule.nil?
-      render json: { errors: [{ message: "Crop schedule with id #{params[:id]} doesn\'t exists." }] }, status: :not_found
+      if crop_schedule.nil?
+        render json: { data: {} }, status: :ok
+      else
+        render json: CropScheduleSerializer.new(crop_schedule), status: :ok
+      end
     end
   end
 end

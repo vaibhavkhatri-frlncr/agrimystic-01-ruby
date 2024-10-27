@@ -6,7 +6,7 @@ class Stage < ApplicationRecord
 
   accepts_nested_attributes_for :stage_details, allow_destroy: true
 
-  validates :title, presence: true
+  validates :title, presence: true, length: { maximum: 50 }
   validate :must_have_at_least_one_stage_detail
 
   private

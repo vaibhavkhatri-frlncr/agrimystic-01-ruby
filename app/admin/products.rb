@@ -1,9 +1,9 @@
 ActiveAdmin.register Product do
   menu parent: 'Product Management', priority: 1
 
-  permit_params :category_id, :display_picture, :name, :code, :manufacturer, :dosage, :features, :description, images: [], product_variants_attributes: [:id, :size, :price, :quantity, :_destroy]
+  permit_params :category_id, :product_image, :name, :code, :manufacturer, :dosage, :features, :description, images: [], product_variants_attributes: [:id, :size, :price, :quantity, :_destroy]
 
-  remove_filter :display_picture_attachment, :display_picture_blob
+  remove_filter :product_image_attachment, :product_image_blob
   filter :category
   filter :name
   filter :code
@@ -19,14 +19,14 @@ ActiveAdmin.register Product do
 
     f.inputs 'Product Details' do
       f.input :category, include_blank: 'select category'
-      f.input :display_picture, as: :file, hint: 'Upload display picture for product'
+      f.input :product_image, as: :file, hint: 'Upload product image'
       f.input :name
       f.input :code
       f.input :manufacturer
       f.input :dosage
       f.input :features
       f.input :description, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
-      f.input :images, as: :file, hint: 'Upload images for product', input_html: { multiple: true }
+      f.input :images, as: :file, hint: 'Upload product images', input_html: { multiple: true }
     end
 
     f.inputs 'Product Variants' do
@@ -43,8 +43,8 @@ ActiveAdmin.register Product do
 
   show do
     attributes_table do
-      row :display_picture do |product|
-        product.display_picture.attached? ? (image_tag url_for(product.display_picture), size: '200x200') : 'No image attached'
+      row :product_image do |product|
+        product.product_image.attached? ? (image_tag url_for(product.product_image), size: '200x200') : 'No image attached'
       end
       row :category
       row :name
@@ -74,8 +74,8 @@ ActiveAdmin.register Product do
   index do
     selectable_column
     id_column
-    column :display_picture do |product|
-      product.display_picture.attached? ? (image_tag url_for(product.display_picture), width: '50') : 'No image attached'
+    column :product_image do |product|
+      product.product_image.attached? ? (image_tag url_for(product.product_image), width: '50') : 'No image attached'
     end
     column :category
     column :name

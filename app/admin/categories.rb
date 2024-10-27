@@ -1,6 +1,10 @@
 ActiveAdmin.register Category do
   permit_params :name
 
+  filter :name
+  filter :created_at
+  filter :updated_at
+
   form do |f|
     f.semantic_errors
 
