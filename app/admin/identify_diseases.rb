@@ -5,9 +5,6 @@ ActiveAdmin.register IdentifyDisease do
 
   filter :crop
   filter :disease_name
-  filter :disease_cause
-  filter :solution
-  filter :products_recommended
   filter :created_at
   filter :updated_at
 
@@ -46,9 +43,6 @@ ActiveAdmin.register IdentifyDisease do
 		id_column
     column :crop
     column :disease_name
-    column :disease_cause
-    column :solution
-    column :products_recommended
     column :disease_image do |identify_disease|
       identify_disease.disease_image.attached? ? (image_tag url_for(identify_disease.disease_image), size: '50x50') : 'No image attached'
     end

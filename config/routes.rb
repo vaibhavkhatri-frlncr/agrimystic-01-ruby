@@ -2,10 +2,13 @@ Rails.application.routes.draw do
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 
-  post 'account/accounts', to: 'accounts#create'
-  post 'account/send_otps', to: 'send_otps#create'
-  post 'account/sms_otp_confirmations', to: 'sms_confirmations#create'
-  post 'account/login', to: 'logins#create'
+  post 'account/signup', to: 'accounts#signup'
+  post 'account/verify_signup_otp', to: 'accounts#verify_signup_otp'
+  post 'account/login', to: 'accounts#login'
+  post 'account/send_otp', to: 'accounts#send_otp'
+  post 'account/verify_otp', to: 'accounts#verify_otp'
+  patch 'account/reset_password', to: 'accounts#reset_password'
+  get 'account/details', to: 'accounts#show'
 
   resources :products, only: [:index, :show]
   get 'product/search', to: 'products#search'

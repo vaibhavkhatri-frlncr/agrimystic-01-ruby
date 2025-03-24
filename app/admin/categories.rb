@@ -1,4 +1,6 @@
 ActiveAdmin.register Category do
+  menu parent: 'Product Management', priority: 1
+
   permit_params :name
 
   filter :name

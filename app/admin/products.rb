@@ -1,5 +1,5 @@
 ActiveAdmin.register Product do
-  menu parent: 'Product Management', priority: 1
+  menu parent: 'Product Management', priority: 2
 
   permit_params :category_id, :product_image, :name, :code, :manufacturer, :dosage, :features, :description, images: [], product_variants_attributes: [:id, :size, :price, :quantity, :_destroy]
 

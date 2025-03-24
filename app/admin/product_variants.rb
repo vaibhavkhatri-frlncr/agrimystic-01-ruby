@@ -1,5 +1,5 @@
 ActiveAdmin.register ProductVariant do
-  menu parent: 'Product Management', priority: 2
+  menu parent: 'Product Management', priority: 3
 
   permit_params :size, :price, :quantity, :product_id
 

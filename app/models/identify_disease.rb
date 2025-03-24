@@ -21,8 +21,9 @@ class IdentifyDisease < ApplicationRecord
 
   def unique_disease_name_for_crop
     if IdentifyDisease.where(crop_id: crop_id)
-                     .where('LOWER(disease_name) = ?', disease_name.downcase)
-                     .exists?
+      .where('LOWER(disease_name) = ?', disease_name.downcase)
+      .where.not(id: id)
+      .exists?
       errors.add(:disease_name, 'this crop already has a disease entry with the same name')
     end
   end

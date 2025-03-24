@@ -3,8 +3,8 @@ class ProductSerializer < BaseSerializer
     product.category.name
   end
 
-  attribute :display_picture do |product|
-    base_url + Rails.application.routes.url_helpers.rails_blob_path(product.display_picture, only_path: true) if product.display_picture.attached?
+  attribute :product_image do |product|
+    base_url + Rails.application.routes.url_helpers.rails_blob_path(product.product_image, only_path: true) if product.product_image.attached?
   end
 
   attributes :name, :code, :manufacturer, :dosage, :features, :description, :total_price
