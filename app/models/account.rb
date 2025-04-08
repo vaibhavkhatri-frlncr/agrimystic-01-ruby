@@ -12,8 +12,9 @@ class Account < ApplicationRecord
 	has_one :cart, dependent: :destroy
 	has_many :cart_products, through: :cart
 	has_many :products, through: :cart_products
+	has_many :addresses, dependent: :destroy
 
-	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: { message: 'Can\'t be blank' }
+	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: true
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
   validates :password, presence: true, if: :password_changed?
 
@@ -36,7 +37,7 @@ class Account < ApplicationRecord
 		return if full_phone_number.blank?
 
 		unless Phonelib.valid?(full_phone_number)
-			errors.add(:full_phone_number, 'Invalid or Unrecognized Phone Number')
+			errors.add(:full_phone_number, 'invalid or unrecognized phone number')
 		end
 	end
 
@@ -44,7 +45,7 @@ class Account < ApplicationRecord
 		return if password.blank?
 
 		unless password.match?(/^(?=.*\d)(?=.*[a-z]).{8,}$/)
-			errors.add(:password, 'Must be at least 8 characters long and include at least one lowercase letter and one digit')
+			errors.add(:password, 'must be at least 8 characters long and include at least one lowercase letter and one digit')
 		end
 	end
 
@@ -52,11 +53,11 @@ class Account < ApplicationRecord
 		return if first_name.blank? || last_name.blank?
 
     unless first_name.match?(/\A[a-zA-Z]+\z/)
-      errors.add(:first_name, 'First name can only contain letters')
+      errors.add(:first_name, 'first name can only contain letters')
     end
 
 		unless last_name.match?(/\A[a-zA-Z]+\z/)
-			errors.add(:last_name, 'Last name can only contain letters')
+			errors.add(:last_name, 'last name can only contain letters')
 		end
 	end
 

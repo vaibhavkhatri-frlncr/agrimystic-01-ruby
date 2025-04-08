@@ -1,13 +1,14 @@
 ActiveAdmin.register Helpline, as: 'Helpline Number' do
-  permit_params :phone_number
+  menu priority: 4, label: 'Helpline Number'
 
-  actions :index, :show, :edit, :update, :destroy
+  permit_params :phone_number, :region
 
   form do |f|
     f.semantic_errors
 
     f.inputs do
       f.input :phone_number
+      f.input :region
     end
 
     f.actions
@@ -16,6 +17,7 @@ ActiveAdmin.register Helpline, as: 'Helpline Number' do
   show do
     attributes_table do
       row :phone_number
+      row :region
       row :created_at
       row :updated_at
     end
@@ -25,27 +27,8 @@ ActiveAdmin.register Helpline, as: 'Helpline Number' do
     selectable_column
     id_column
     column :phone_number
+    column :region
 
     actions
-  end
-
-  controller do
-    def new
-      if Helpline.exists?
-        flash[:alert] = 'You can only create one Helpline Number.'
-        redirect_to admin_helpline_numbers_path
-      else
-        super
-      end
-    end
-
-    def create
-      if Helpline.exists?
-        flash[:alert] = 'You can only create one Helpline Number.'
-        redirect_to admin_helpline_numbers_path
-      else
-        super
-      end
-    end
   end
 end

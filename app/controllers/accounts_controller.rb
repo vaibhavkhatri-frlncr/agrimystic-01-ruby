@@ -1,24 +1,28 @@
 class AccountsController < ApplicationController
   before_action :validate_json_web_token, only: [:verify_signup_otp, :verify_otp, :reset_password, :show]
+  before_action :check_account_activated, only: [:reset_password, :show]
 
   def signup
     json_params = jsonapi_deserialize(params)
     phone = Phonelib.parse(json_params['full_phone_number']).sanitized
     account = Account.find_by(full_phone_number: phone)
-  
+
     if account
-      if account.activated?
-        return render json: { errors: [{ account: 'Account already activated' }] }, status: :unprocessable_entity
+      if account.otp_verified?
+        return render json: { errors: [{ account: 'Account already registered' }] }, status: :unprocessable_entity
       elsif !account.update(json_params.except('full_phone_number'))
         return render json: { errors: format_activerecord_errors(account.errors) }, status: :unprocessable_entity
       end
 
+      create_or_update_address(account, json_params)
       return send_otp(phone, 'signup')
     end
 
     @account = Account.new(json_params)
 
     if @account.save
+      byebug
+      create_or_update_address(@account, json_params)
       return send_otp(@account.full_phone_number, 'signup')
     else
       render json: { errors: format_activerecord_errors(@account.errors) }, status: :unprocessable_entity
@@ -30,7 +34,7 @@ class AccountsController < ApplicationController
       account = Account.find_by(full_phone_number: @sms_otp.full_phone_number)
       return render json: { errors: [{ account: 'Account not found' }] }, status: :unprocessable_entity unless account
 
-      account.update!(activated: true)
+      account.update!(otp_verified: true)
       render json: { token: generate_account_token(account), message: 'OTP verified successfully' }, status: :ok
     else
       render json: { errors: [{ pin: 'Invalid or expired OTP' }] }, status: :unprocessable_entity
@@ -62,8 +66,14 @@ class AccountsController < ApplicationController
   end
 
   def send_otp(phone = nil, purpose = nil)
-    phone ||= jsonapi_deserialize(params)['full_phone_number']
+    phone ||= Phonelib.parse(jsonapi_deserialize(params)['full_phone_number']).sanitized
     purpose ||= jsonapi_deserialize(params)['purpose']
+
+    if purpose == 'reset password'
+      unless Account.exists?(full_phone_number: phone, otp_verified: true)
+        return render json: { errors: [{ account: 'Account not found' }] }, status: :not_found
+      end
+    end
 
     @sms_otp = SmsOtp.new(full_phone_number: phone)
 
@@ -105,6 +115,26 @@ class AccountsController < ApplicationController
   end
 
   private
+
+  def create_or_update_address(account, params)
+    address_attrs = {
+      name: params['full_name'],
+      mobile: Phonelib.parse(params['full_phone_number']).sanitized&.last(10),
+      address: params['address'],
+      pincode: params['pincode'],
+      state: params['state'],
+      district: params['district'],
+      address_type: :home,
+      default_address: true
+    }
+
+    if account.addresses.exists?(address_type: :home)
+      address = account.addresses.find_by(address_type: :home)
+      address.update(address_attrs)
+    else
+      account.addresses.create(address_attrs)
+    end
+  end
 
   def validate_otp(pin)
     begin

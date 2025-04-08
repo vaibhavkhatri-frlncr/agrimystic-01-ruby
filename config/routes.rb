@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   resources :crops, only: [:index, :show]
   resources :crop_schedules, only: [:show]
   resources :identify_diseases, only: [:index, :show]
+  resources :addresses, only: [:index, :show, :create, :update, :destroy]
 
-  get 'helpline/number', to: 'helplines#show'
+  get 'helpline/numbers', to: 'helplines#index'
 end

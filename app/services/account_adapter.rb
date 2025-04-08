@@ -4,7 +4,7 @@ class AccountAdapter
   def login_account(account_params)
     phone = Phonelib.parse(account_params.full_phone_number).sanitized
 
-    account = Account.find_by(full_phone_number: phone, activated: true)
+    account = Account.find_by(full_phone_number: phone, otp_verified: true)
 
     unless account.present?
       broadcast(:account_not_found)

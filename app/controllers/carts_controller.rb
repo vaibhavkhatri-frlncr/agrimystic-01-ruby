@@ -1,6 +1,7 @@
 class CartsController < ApplicationController
   before_action :validate_json_web_token
-  before_action :load_cart, only: %i[add_to_cart remove_from_cart get_cart_products]
+  before_action :check_account_activated
+  before_action :load_cart, only: [:add_to_cart, :remove_from_cart, :get_cart_products]
 
   def add_to_cart
     ActiveRecord::Base.transaction do

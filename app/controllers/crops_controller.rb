@@ -1,10 +1,16 @@
 class CropsController < ApplicationController
   before_action :validate_json_web_token
+  before_action :check_account_activated
   before_action :load_crop, only: [:show]
 
   def index
     crops = Crop.all
-    render json: CropSerializer.new(crops), status: :ok
+
+    if crops.any?
+      render json: CropSerializer.new(crops), status: :ok
+    else
+      render json: { errors: { message: 'No crops found.' } }, status: :not_found
+    end
   end
 
   def show

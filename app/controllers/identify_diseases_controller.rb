@@ -1,5 +1,6 @@
 class IdentifyDiseasesController < ApplicationController
   before_action :validate_json_web_token
+  before_action :check_account_activated
   before_action :load_identify_disease, only: [:show]
 
   def index

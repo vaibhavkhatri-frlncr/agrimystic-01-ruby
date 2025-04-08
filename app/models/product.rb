@@ -25,15 +25,49 @@ class Product < ApplicationRecord
   end
 
   def product_image_format
-    errors.add(:product_image, 'must be a PNG, JPG, or JPEG') if product_image.attached? && !product_image.content_type.in?(%w[image/png image/jpg image/jpeg])
+    return unless product_image.attached?
+
+    allowed_types = %w[
+      image/png
+      image/jpg
+      image/jpeg
+      image/gif
+      image/bmp
+      image/webp
+      image/tiff
+      image/x-icon
+      image/vnd.microsoft.icon
+      image/heif
+      image/heic
+      image/svg+xml
+    ]
+
+    unless product_image.content_type.in?(allowed_types)
+      errors.add(:product_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+    end
   end
 
   def images_format
-    if images.attached?
-      images.each do |image|
-        unless image.content_type.in?(%w[image/png image/jpg image/jpeg])
-          errors.add(:images, 'must be PNG, JPG, or JPEG')
-        end
+    return unless images.attached?
+
+    allowed_types = %w[
+      image/png
+      image/jpg
+      image/jpeg
+      image/gif
+      image/bmp
+      image/webp
+      image/tiff
+      image/x-icon
+      image/vnd.microsoft.icon
+      image/heif
+      image/heic
+      image/svg+xml
+    ]
+
+    images.each do |image|
+      unless image.content_type.in?(allowed_types)
+        errors.add(:images, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
       end
     end
   end
