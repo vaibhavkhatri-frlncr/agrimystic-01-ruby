@@ -14,8 +14,8 @@ ActiveAdmin.register IdentifyDisease do
     f.inputs do
       f.input :crop, include_blank: 'select crop'
       f.input :disease_name
-      f.input :disease_cause, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
-      f.input :solution, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
+      f.input :disease_cause, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
+      f.input :solution, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :products_recommended
       f.input :disease_image, as: :file, hint: 'Upload disease image'
     end

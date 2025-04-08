@@ -1,5 +1,5 @@
-class Helpline < ApplicationRecord
-  self.table_name = :helplines
+class HelplineNumber < ApplicationRecord
+  self.table_name = :helpline_numbers
 
   before_validation :valid_phone_number
 

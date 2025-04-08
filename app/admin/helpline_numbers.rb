@@ -1,7 +1,12 @@
-ActiveAdmin.register Helpline, as: 'Helpline Number' do
-  menu priority: 4, label: 'Helpline Number'
+ActiveAdmin.register HelplineNumber do
+  menu priority: 4, label: 'Helpline Numbers'
 
   permit_params :phone_number, :region
+
+  filter :phone_number
+  filter :region
+  filter :created_at
+  filter :updated_at
 
   form do |f|
     f.semantic_errors

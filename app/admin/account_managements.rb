@@ -48,7 +48,28 @@ ActiveAdmin.register Account do
 			row :date_of_birth
 			row :created_at
       row :updated_at
-		end    
+		end
+
+		panel 'Addresses' do
+			if resource.addresses.any?
+				table_for resource.addresses do
+					column :name
+					column :mobile
+					column :address
+					column :pincode
+					column :state
+					column :district
+					column :address_type
+					column :default_address
+					column :created_at
+					column :updated_at
+				end
+			else
+				div do
+					'No addresses associated with this account.'
+				end
+			end
+		end
 	end
 
 	index title: 'Account' do

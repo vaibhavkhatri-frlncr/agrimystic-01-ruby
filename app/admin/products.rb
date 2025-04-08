@@ -25,7 +25,7 @@ ActiveAdmin.register Product do
       f.input :manufacturer
       f.input :dosage
       f.input :features
-      f.input :description, as: :text, input_html: { style: 'width: 78.5%; height: 100px;' }
+      f.input :description, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :images, as: :file, hint: 'Upload product images', input_html: { multiple: true }
     end
 
@@ -81,8 +81,6 @@ ActiveAdmin.register Product do
     column :name
     column :code
     column :manufacturer
-    column :dosage
-    column :features
     column :total_price
 
     actions
