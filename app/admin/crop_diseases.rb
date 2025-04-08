@@ -1,4 +1,4 @@
-ActiveAdmin.register IdentifyDisease do
+ActiveAdmin.register CropDisease do
   menu parent: 'Crop Management', priority: 3
 
   permit_params :crop_id, :disease_name, :disease_cause, :solution, :products_recommended, :disease_image
@@ -30,8 +30,8 @@ ActiveAdmin.register IdentifyDisease do
       row :disease_cause
       row :solution
       row :products_recommended
-      row :disease_image do |identify_disease|
-        identify_disease.disease_image.attached? ? (image_tag url_for(identify_disease.disease_image), size: '200x200') : 'No image attached'
+      row :disease_image do |crop_disease|
+        crop_disease.disease_image.attached? ? (image_tag url_for(crop_disease.disease_image), size: '200x200') : 'No image attached'
       end
       row :created_at
       row :updated_at
@@ -43,8 +43,8 @@ ActiveAdmin.register IdentifyDisease do
 		id_column
     column :crop
     column :disease_name
-    column :disease_image do |identify_disease|
-      identify_disease.disease_image.attached? ? (image_tag url_for(identify_disease.disease_image), size: '50x50') : 'No image attached'
+    column :disease_image do |crop_disease|
+      crop_disease.disease_image.attached? ? (image_tag url_for(crop_disease.disease_image), size: '50x50') : 'No image attached'
     end
 
     actions

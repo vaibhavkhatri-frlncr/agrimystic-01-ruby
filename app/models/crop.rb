@@ -3,7 +3,7 @@ class Crop < ApplicationRecord
 
   has_one_attached :crop_image
   has_one :crop_schedule, dependent: :destroy
-  has_many :identify_diseases, dependent: :destroy
+  has_many :crop_diseases, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 50 }
   validate :crop_image_presence

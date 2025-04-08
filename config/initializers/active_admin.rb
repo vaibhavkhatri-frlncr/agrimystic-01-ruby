@@ -4,7 +4,15 @@ ActiveAdmin.setup do |config|
   # Set the title that is displayed on the main layout
   # for each of the active admin pages.
   #
-  config.site_title = "Farmersapp01 Ruby"
+  config.site_title = ->(view) do
+    view.link_to(
+      view.image_tag("logo.jpg", height: 30, style: "vertical-align: middle; margin-right: 10px;") + "Farmade",
+      view.admin_root_path,
+      style: "display: flex; align-items: center;"
+    ).html_safe
+  end
+
+  # config.site_title = "Farmade"
 
   # Set the link url for the title. For example, to take
   # users to your main site. Defaults to no link.

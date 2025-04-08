@@ -1,5 +1,5 @@
-class IdentifyDisease < ApplicationRecord
-  self.table_name = :identify_diseases
+class CropDisease < ApplicationRecord
+  self.table_name = :crop_diseases
 
   belongs_to :crop
   has_one_attached :disease_image
@@ -20,7 +20,7 @@ class IdentifyDisease < ApplicationRecord
   end
 
   def unique_disease_name_for_crop
-    if IdentifyDisease.where(crop_id: crop_id)
+    if CropDisease.where(crop_id: crop_id)
       .where('LOWER(disease_name) = ?', disease_name.downcase)
       .where.not(id: id)
       .exists?

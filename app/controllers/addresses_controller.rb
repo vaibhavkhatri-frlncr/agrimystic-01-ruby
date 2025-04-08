@@ -26,7 +26,7 @@ class AddressesController < ApplicationController
     end
 
     if address.save
-      render json: { message: 'Address created successfully', address: AddressSerializer.new(address) }, status: :created
+      render json: { address: AddressSerializer.new(address), message: 'Address created successfully' }, status: :created
     else
       render json: { errors: format_activerecord_errors(address.errors) }, status: :unprocessable_entity
     end
@@ -38,7 +38,7 @@ class AddressesController < ApplicationController
     end
 
     if @address.update(address_params)
-      render json: { message: 'Address updated successfully', address: AddressSerializer.new(@address) }, status: :ok
+      render json: { address: AddressSerializer.new(@address), message: 'Address updated successfully' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(@address.errors) }, status: :unprocessable_entity
     end
