@@ -2,6 +2,7 @@ class Account < ApplicationRecord
 	self.table_name = :accounts
 
 	has_secure_password
+	before_validation :titleize_account_fields
 	before_validation :parse_full_phone_number
 	before_validation :valid_phone_number
 	before_validation :valid_password
@@ -16,7 +17,8 @@ class Account < ApplicationRecord
 
 	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: true
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
-  validates :password, presence: true, if: :password_changed?
+	validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true
+	validates :password, presence: true, if: :password_changed?
 
 	scope :active, -> { where(activated: true) }
 
@@ -24,6 +26,21 @@ class Account < ApplicationRecord
 
 	def password_changed?
 		password.present? || new_record?
+	end
+
+	def titleize_account_fields
+    self.first_name = titleize_string(first_name)
+    self.last_name = titleize_string(last_name)
+    self.full_name = titleize_string(full_name)
+    self.address = titleize_string(address)
+    self.state = titleize_string(state)
+    self.district = titleize_string(district)
+    self.village = titleize_string(village)
+    self.gender = titleize_string(gender)
+  end
+
+	def titleize_string(str)
+		str.to_s.titleize if str.present?
 	end
 
 	def parse_full_phone_number

@@ -17,8 +17,26 @@ class Product < ApplicationRecord
 
   before_update :check_product_variants_before_update
   after_save :calculate_product_total_price
+  before_validation :format_fields
 
   private
+
+  def format_fields
+    self.name = titleize_string(name)
+    self.manufacturer = titleize_string(manufacturer)
+    self.features = titleize_string(features)
+
+    self.dosage = capitalize_string(dosage)
+    self.description = capitalize_string(description)
+  end
+
+  def titleize_string(str)
+    str.to_s.titleize if str.present?
+  end
+
+  def capitalize_string(str)
+    str.to_s.capitalize if str.present?
+  end
 
   def product_image_presence
     errors.add(:product_image, 'must be attached') unless product_image.attached?

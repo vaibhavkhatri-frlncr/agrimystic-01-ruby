@@ -3,6 +3,15 @@ ActiveAdmin.register ProductVariant do
 
   permit_params :size, :price, :quantity, :product_id
 
+  config.sort_order = 'created_at_desc'
+
+  filter :product
+  filter :size
+  filter :price
+  filter :quantity
+  filter :created_at
+  filter :updated_at
+
   form do |f|
     f.semantic_errors
 
@@ -30,7 +39,11 @@ ActiveAdmin.register ProductVariant do
 
   index do
     selectable_column
-    id_column
+
+    column('No.', sortable: :created_at) do |variant|
+      ProductVariant.order(:created_at).pluck(:id).index(variant.id) + 1
+    end
+
     column :product
     column :size
     column :price

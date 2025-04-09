@@ -7,10 +7,12 @@ ActiveAdmin.register Crop do
   filter :created_at
   filter :updated_at
 
+  config.sort_order = 'created_at_desc'
+
   form do |f|
     f.inputs do
       f.input :name
-      f.input :crop_image, as: :file, hint: 'Upload crop image'
+      f.input :crop_image, as: :file, hint: f.object.crop_image.attached? ? image_tag(url_for(f.object.crop_image), size: '100x100') : 'Upload crop image'
     end
     f.actions
   end
@@ -28,11 +30,16 @@ ActiveAdmin.register Crop do
 
   index do
     selectable_column
-    id_column
+
+    column('No.', sortable: :created_at) do |crop|
+      Crop.order(:created_at).pluck(:id).index(crop.id) + 1
+    end
+
     column :name
     column :crop_image do |crop|
       crop.crop_image.attached? ? (image_tag url_for(crop.crop_image), size: '50x50') : 'No image attached'
     end
+
     actions
   end
 end

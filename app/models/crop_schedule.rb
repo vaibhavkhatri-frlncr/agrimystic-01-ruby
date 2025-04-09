@@ -11,9 +11,14 @@ class CropSchedule < ApplicationRecord
   validate :check_stage_details_before_update, on: [:create, :update]
   validate :unique_crop_schedule
 
+  before_validation :titleize_heading
   before_update :check_stages_before_update
 
   private
+
+  def titleize_heading
+    self.heading = heading.to_s.titleize if heading.present?
+  end
 
   def unique_crop_schedule
     if new_record? || crop_id_changed?

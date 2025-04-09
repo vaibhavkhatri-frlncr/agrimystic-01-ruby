@@ -8,6 +8,8 @@ ActiveAdmin.register HelplineNumber do
   filter :created_at
   filter :updated_at
 
+  config.sort_order = 'created_at_desc'
+
   form do |f|
     f.semantic_errors
 
@@ -30,7 +32,11 @@ ActiveAdmin.register HelplineNumber do
 
   index do
     selectable_column
-    id_column
+
+    column('No.', sortable: :created_at) do |helpline|
+      HelplineNumber.order(:created_at).pluck(:id).index(helpline.id) + 1
+    end
+
     column :phone_number
     column :region
 

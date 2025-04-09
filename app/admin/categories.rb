@@ -7,6 +7,8 @@ ActiveAdmin.register Category do
   filter :created_at
   filter :updated_at
 
+  config.sort_order = 'created_at_desc'
+
   form do |f|
     f.semantic_errors
 
@@ -27,9 +29,13 @@ ActiveAdmin.register Category do
 
   index do
     selectable_column
-    id_column
-    column :name
 
+    column('No.', sortable: :created_at) do |category|
+      Category.order(:created_at).pluck(:id).index(category.id) + 1
+    end
+
+    column :name
+    column :created_at
     actions
   end
 end

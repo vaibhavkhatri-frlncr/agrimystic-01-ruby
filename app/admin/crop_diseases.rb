@@ -8,6 +8,8 @@ ActiveAdmin.register CropDisease do
   filter :created_at
   filter :updated_at
 
+  config.sort_order = 'created_at_desc'
+
   form do |f|
     f.semantic_errors
 
@@ -17,7 +19,7 @@ ActiveAdmin.register CropDisease do
       f.input :disease_cause, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :solution, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :products_recommended
-      f.input :disease_image, as: :file, hint: 'Upload disease image'
+      f.input :disease_image, as: :file, hint: f.object.disease_image.attached? ? image_tag(url_for(f.object.disease_image), size: '100x100') : 'Upload disease image'
     end
 
     f.actions
@@ -40,7 +42,11 @@ ActiveAdmin.register CropDisease do
 
   index do
     selectable_column
-		id_column
+
+    column('No.', sortable: :created_at) do |disease|
+      CropDisease.order(:created_at).pluck(:id).index(disease.id) + 1
+    end
+
     column :crop
     column :disease_name
     column :disease_image do |crop_disease|

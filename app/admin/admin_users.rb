@@ -9,6 +9,8 @@ ActiveAdmin.register AdminUser do
   filter :created_at
   filter :updated_at
 
+  config.sort_order = 'created_at_desc'
+
   form do |f|
     f.semantic_errors
 
@@ -20,7 +22,6 @@ ActiveAdmin.register AdminUser do
 
     f.actions
   end
-
 
   show do
     attributes_table do
@@ -34,7 +35,11 @@ ActiveAdmin.register AdminUser do
 
   index do
     selectable_column
-    id_column
+
+    column('No.', sortable: :created_at) do |admin_user|
+      AdminUser.order(:created_at).pluck(:id).index(admin_user.id) + 1
+    end
+
     column :email
     column :current_sign_in_at
     column :sign_in_count

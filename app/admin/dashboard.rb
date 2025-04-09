@@ -9,15 +9,17 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
-    # === Category -> Products -> Variants ===
+    # === Product Overview (Category → Products → Variants) ===
     panel "Product Overview (Category → Products → Variants)" do
-      table_for Category.order(created_at: :desc) do
+      categories = Category.order(created_at: :asc).to_a
+      table_for categories do
+        column("No.") { |category| categories.index(category) + 1 }
         column("Category") { |category| category.name }
         column("Products") do |category|
           ul do
-            category.products.map do |product|
+            category.products.order(created_at: :asc).each_with_index.map do |product, index|
               li do
-                span "#{product.name} "
+                span "#{index + 1}. #{product.name} "
                 small "(#{product.product_variants.count} Variants)"
               end
             end
@@ -26,45 +28,55 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
-    # === Crop → CropSchedule ===
+    # === Crops and Their Schedule ===
     panel "Crops and Their Schedule" do
-      table_for Crop.order(created_at: :desc) do
+      crops = Crop.order(created_at: :asc).to_a
+      table_for crops do
+        column("No.") { |crop| crops.index(crop) + 1 }
         column("Crop") { |crop| crop.name }
-        column("Schedule") do |crop|
-          crop.crop_schedule&.heading || "No Schedule Assigned"
-        end
+        column("Schedule") { |crop| crop.crop_schedule&.heading || "No Schedule Assigned" }
       end
     end
 
-    # === Crop → CropDiseases ===
+    # === Crops and Their Diseases ===
     panel "Crops and Their Diseases" do
-      table_for Crop.order(created_at: :desc) do
+      crops = Crop.order(created_at: :asc).to_a
+      table_for crops do
+        column("No.") { |crop| crops.index(crop) + 1 }
         column("Crop") { |crop| crop.name }
         column("Diseases") do |crop|
-          ul do
-            crop.crop_diseases.map do |disease|
-              li disease.disease_name
+          if crop.crop_diseases.any?
+            ul do
+              crop.crop_diseases.order(created_at: :asc).each_with_index.map do |disease, index|
+                li "#{index + 1}. #{disease.disease_name}"
+              end
             end
+          else
+            status_tag "No Diseases", :warning
           end
         end
       end
     end
 
-    # === Recent Entries Summary (Now All Records) ===
+    # === Recent Entries Summary ===
     columns do
       column do
         panel "Product Categories" do
+          categories = Category.order(created_at: :asc)
           ul do
-            Category.order(created_at: :desc).map { |cat| li cat.name }
+            categories.each_with_index.map do |cat, index|
+              li "#{index + 1}. #{cat.name}"
+            end
           end
         end
       end
 
       column do
         panel "All Helpline Numbers" do
+          numbers = HelplineNumber.order(created_at: :asc)
           ul do
-            HelplineNumber.order(created_at: :desc).map do |help|
-              li "#{help.region} - #{help.phone_number}"
+            numbers.each_with_index.map do |help, index|
+              li "#{index + 1}. #{help.region} - #{help.phone_number}"
             end
           end
         end
