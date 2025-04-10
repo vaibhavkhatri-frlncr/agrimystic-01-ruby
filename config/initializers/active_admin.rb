@@ -6,13 +6,11 @@ ActiveAdmin.setup do |config|
   #
   config.site_title = ->(view) do
     view.link_to(
-      view.image_tag("logo.jpg", height: 30, style: "vertical-align: middle; margin-right: 10px;") + "Farmade",
+      view.image_tag("logo.jpg", height: 30, style: "vertical-align: middle; margin-right: 10px;") + "Agrimystic",
       view.admin_root_path,
       style: "display: flex; align-items: center;"
     ).html_safe
   end
-
-  # config.site_title = "Farmade"
 
   # Set the link url for the title. For example, to take
   # users to your main site. Defaults to no link.

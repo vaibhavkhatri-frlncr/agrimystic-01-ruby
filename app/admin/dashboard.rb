@@ -1,12 +1,15 @@
 ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: proc { "Dashboard" }
 
-  content title: proc { "Welcome to Farmade Admin" } do
+  content title: proc { "Welcome to Agrimystic Admin" } do
     div class: "blank_slate_container", id: "dashboard_default_message" do
       span class: "blank_slate" do
-        span "Welcome to the Farmade Admin Panel"
-        small "Manage Crops, Products, Categories, Schedules, and More!"
+        span "Welcome to the Agrimystic Admin Panel"
+        small "Manage Crops with Schedules and Diseases, organize Products by Categories, and more!"
       end
+    end
+
+    div style: "margin-bottom: 20px;" do
     end
 
     # === Product Overview (Category → Products → Variants) ===
