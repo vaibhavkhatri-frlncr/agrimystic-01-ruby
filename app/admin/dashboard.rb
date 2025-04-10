@@ -55,7 +55,7 @@ ActiveAdmin.register_page "Dashboard" do
               end
             end
           else
-            status_tag "No Diseases", :warning
+            status_tag "No Diseases", "warning"
           end
         end
       end
