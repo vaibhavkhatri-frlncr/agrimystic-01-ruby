@@ -1,5 +1,5 @@
 default: &default
-  adapter: postgresql
+  adapter: sqlite3
   encoding: unicode
   pool: <%= ENV["RAILS_DB_POOL"] || ENV['RAILS_MAX_THREADS'] || 5 %>
   idle_timeout: <%= ENV["RAILS_IDLE_CONNECTION"] ||  60 %>
@@ -7,7 +7,7 @@ default: &default
 
 development:
   <<: *default
-  adapter: postgresql
+  adapter: sqlite3
   database: <%= ENV['TEMPLATEAPP_DATABASE'] %>
   username: <%= ENV['TEMPLATEAPP_DATABASE_USER'] %>
   password: <%= ENV['TEMPLATEAPP_DATABASE_PASSWORD'] %>
@@ -16,7 +16,7 @@ development:
 
 test:
   <<: *default
-  adapter: postgresql
+  adapter: sqlite3
   database: <%= ENV['TEMPLATEAPP_DATABASE'] %>
   username: <%= ENV['TEMPLATEAPP_DATABASE_USER'] %>
   password: <%= ENV['TEMPLATEAPP_DATABASE_PASSWORD'] %>
@@ -25,7 +25,7 @@ test:
 
 production:
   <<: *default
-  adapter: postgresql
+  adapter: sqlite3
   database: <%= ENV['TEMPLATEAPP_DATABASE'] %>
   username: <%= ENV['TEMPLATEAPP_DATABASE_USER'] %>
   password: <%= ENV['TEMPLATEAPP_DATABASE_PASSWORD'] %>
