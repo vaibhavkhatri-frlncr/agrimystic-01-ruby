@@ -9,7 +9,7 @@ class Account < ApplicationRecord
 	before_validation :valid_first_and_last_name
 	before_create :generate_api_key
 
-	has_one_attached :profile_pic
+	has_one_attached :profile_image
 	has_one :cart, dependent: :destroy
 	has_many :cart_products, through: :cart
 	has_many :products, through: :cart_products

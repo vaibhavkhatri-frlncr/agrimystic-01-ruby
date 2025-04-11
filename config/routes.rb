@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   post 'account/verify_otp', to: 'accounts#verify_otp'
   patch 'account/reset_password', to: 'accounts#reset_password'
   get 'account/details', to: 'accounts#show'
+  put 'account/details_update', to: 'accounts#profile_details_update'
+  post 'account/phone_update_otp_send', to: 'accounts#phone_update_otp_send'
+  put 'account/phone_update_otp_verify', to: 'accounts#phone_update_otp_verify'
 
   resources :products, only: [:index, :show]
   get 'product/search', to: 'products#search'
