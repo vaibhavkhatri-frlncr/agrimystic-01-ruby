@@ -29,7 +29,7 @@ class CropSchedule < ApplicationRecord
   end
 
   def must_have_at_least_one_stage
-    errors.add(:base, 'Crop shedule must have at least one stage') if stages.empty?
+    errors.add(:base, 'Crop schedule must have at least one stage') if stages.empty?
   end
 
   def check_stages_before_update

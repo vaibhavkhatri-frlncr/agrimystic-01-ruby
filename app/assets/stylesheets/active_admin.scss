@@ -14,3 +14,22 @@
 // For example, to change the default status-tag color:
 //
 //   .status_tag { background: #6090DB; }
+
+.empty-message {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-left: 4px solid #ccc;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: 14px;
+
+  span {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  small {
+    color: #777;
+  }
+}

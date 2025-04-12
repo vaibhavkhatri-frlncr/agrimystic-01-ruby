@@ -18,20 +18,33 @@ ActiveAdmin.register Product do
   filter :updated_at
 
   form do |f|
-    f.semantic_errors
+    if f.object.errors[:base].any?
+      div style: 'background-color: #ffe6e6; border: 1px solid #ff4d4d; padding: 10px; margin-bottom: 20px; color: #d8000c; font-weight: bold;' do
+        ul style: 'padding-left: 20px; margin: 0;' do
+          f.object.errors[:base].each do |msg|
+            li "• #{msg}"
+          end
+        end
+      end
+    end
 
     f.inputs 'Product Details' do
       f.input :category, include_blank: 'select category'
-      f.input :product_image, as: :file, hint: f.object.product_image.attached? ? image_tag(url_for(f.object.product_image), size: '100x100') : 'Upload product image'
+      f.input :product_image, as: :file, hint: (
+        if f.object.persisted? && f.object.product_image.attached?
+          image_tag(url_for(f.object.product_image), size: '100x100')
+        else
+          'Upload product image'
+        end
+      )
       f.input :name
       f.input :code
       f.input :manufacturer
       f.input :dosage
       f.input :features
       f.input :description, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
-
       f.input :images, as: :file, input_html: { multiple: true }, hint: (
-        if f.object.images.attached?
+        if f.object.persisted? && f.object.images.attached?
           f.object.images.map { |img| image_tag(url_for(img), size: '100x100', style: 'margin-right: 10px;') }.join.html_safe
         else
           'Upload product images'

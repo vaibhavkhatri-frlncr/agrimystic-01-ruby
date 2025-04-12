@@ -12,63 +12,110 @@ ActiveAdmin.register_page "Dashboard" do
     div style: "margin-bottom: 20px;" do
     end
 
-    # === Product Overview (Category → Products → Variants) ===
+    # Product Overview
     panel "Product Overview (Category → Products → Variants)" do
       categories = Category.order(created_at: :asc).to_a
-      table_for categories do
-        column("No.") { |category| categories.index(category) + 1 }
-        column("Category") { |category| category.name }
-        column("Products") do |category|
-          ul do
-            category.products.order(created_at: :asc).each_with_index.map do |product, index|
-              li do
-                span "#{index + 1}. #{product.name} "
-                small "(#{product.product_variants.count} Variants)"
+      if categories.any?
+        table_for categories do
+          column("No.") { |category| categories.index(category) + 1 }
+          column("Category") { |category| category.name }
+          column("Products") do |category|
+            if category.products.any?
+              ul do
+                category.products.order(created_at: :asc).each_with_index.map do |product, index|
+                  li do
+                    span "#{index + 1}. #{product.name} "
+                    small "(#{product.product_variants.count} Variants)"
+                  end
+                end
+              end
+            else
+              div class: "empty-message" do
+                span "🗃️ No Products Recorded"
+                small "Add products to this category to see them here."
               end
             end
           end
         end
+      else
+        div class: "empty-message" do
+          span "🚫 No Categories Found"
+          small "Start by creating a new category."
+        end
       end
     end
 
-    # === Crops and Their Schedule ===
+    # Crops and Their Schedule
     panel "Crops and Their Schedule" do
       crops = Crop.order(created_at: :asc).to_a
-      table_for crops do
-        column("No.") { |crop| crops.index(crop) + 1 }
-        column("Crop") { |crop| crop.name }
-        column("Schedule") { |crop| crop.crop_schedule&.heading || "No Schedule Assigned" }
-      end
-    end
-
-    # === Crops and Their Diseases ===
-    panel "Crops and Their Diseases" do
-      crops = Crop.order(created_at: :asc).to_a
-      table_for crops do
-        column("No.") { |crop| crops.index(crop) + 1 }
-        column("Crop") { |crop| crop.name }
-        column("Diseases") do |crop|
-          if crop.crop_diseases.any?
-            ul do
-              crop.crop_diseases.order(created_at: :asc).each_with_index.map do |disease, index|
-                li "#{index + 1}. #{disease.disease_name}"
+      if crops.any?
+        table_for crops do
+          column("No.") { |crop| crops.index(crop) + 1 }
+          column("Crop") { |crop| crop.name }
+          column("Schedule") do |crop|
+            if crop.crop_schedule.present?
+              crop.crop_schedule.heading
+            else
+              div class: "empty-message" do
+                span "📅 No Schedule Recorded"
+                small "Add a schedule to this crop to see it here."
               end
             end
-          else
-            status_tag "No Diseases", "warning"
           end
+        end
+      else
+        div class: "empty-message" do
+          span "🌱 No Crops Found"
+          small "Add crops to manage their schedule."
         end
       end
     end
 
-    # === Recent Entries Summary ===
+    # Crops and Their Diseases
+    panel "Crops and Their Diseases" do
+      crops = Crop.order(created_at: :asc).to_a
+      if crops.any?
+        table_for crops do
+          column("No.") { |crop| crops.index(crop) + 1 }
+          column("Crop") { |crop| crop.name }
+          column("Diseases") do |crop|
+            if crop.crop_diseases.any?
+              ul do
+                crop.crop_diseases.order(created_at: :asc).each_with_index.map do |disease, index|
+                  li "#{index + 1}. #{disease.disease_name}"
+                end
+              end
+            else
+              div class: "empty-message" do
+                span "🦠 No Diseases Recorded"
+                small "Add diseases to this crop to see them here."
+              end
+            end
+          end
+        end
+      else
+        div class: "empty-message" do
+          span "🌾 No Crops Available"
+          small "Add crops to manage their diseases."
+        end
+      end
+    end
+
+    # Categories and Helplines
     columns do
       column do
         panel "Product Categories" do
           categories = Category.order(created_at: :asc)
-          ul do
-            categories.each_with_index.map do |cat, index|
-              li "#{index + 1}. #{cat.name}"
+          if categories.any?
+            ul do
+              categories.each_with_index.map do |cat, index|
+                li "#{index + 1}. #{cat.name}"
+              end
+            end
+          else
+            div class: "empty-message" do
+              span "📦 No Categories Yet"
+              small "You can add categories for your products."
             end
           end
         end
@@ -77,9 +124,16 @@ ActiveAdmin.register_page "Dashboard" do
       column do
         panel "All Helpline Numbers" do
           numbers = HelplineNumber.order(created_at: :asc)
-          ul do
-            numbers.each_with_index.map do |help, index|
-              li "#{index + 1}. #{help.region} - #{help.phone_number}"
+          if numbers.any?
+            ul do
+              numbers.each_with_index.map do |help, index|
+                li "#{index + 1}. #{help.region} - #{help.phone_number}"
+              end
+            end
+          else
+            div class: "empty-message" do
+              span "📞 No Helpline Numbers"
+              small "You can add support numbers for various regions."
             end
           end
         end
