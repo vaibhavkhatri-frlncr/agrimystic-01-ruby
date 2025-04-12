@@ -19,10 +19,32 @@ class Account < ApplicationRecord
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
 	validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true
 	validates :password, presence: true, if: :password_changed?
+	validate :valid_profile_image_format, if: -> { profile_image.attached? }
 
 	scope :active, -> { where(activated: true) }
 
 	private
+
+	def valid_profile_image_format
+		allowed_types = %w[
+			image/png
+			image/jpg
+			image/jpeg
+			image/gif
+			image/bmp
+			image/webp
+			image/tiff
+			image/x-icon
+			image/vnd.microsoft.icon
+			image/heif
+			image/heic
+			image/svg+xml
+		]
+
+		unless profile_image.content_type.in?(allowed_types)
+			errors.add(:profile_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+		end
+	end
 
 	def password_changed?
 		password.present? || new_record?

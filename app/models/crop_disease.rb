@@ -33,7 +33,26 @@ class CropDisease < ApplicationRecord
   end
 
   def disease_image_format
-    errors.add(:disease_image, 'must be a PNG, JPG, or JPEG') if disease_image.attached? && !%w[image/png image/jpg image/jpeg].include?(disease_image.content_type)
+    return unless disease_image.attached?
+
+    allowed_types = %w[
+      image/png
+      image/jpg
+      image/jpeg
+      image/gif
+      image/bmp
+      image/webp
+      image/tiff
+      image/x-icon
+      image/vnd.microsoft.icon
+      image/heif
+      image/heic
+      image/svg+xml
+    ]
+
+    unless disease_image.content_type.in?(allowed_types)
+      errors.add(:disease_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+    end
   end
 
   def unique_disease_name_for_crop

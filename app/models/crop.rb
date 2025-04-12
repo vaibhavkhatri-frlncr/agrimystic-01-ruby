@@ -18,8 +18,25 @@ class Crop < ApplicationRecord
   end
 
   def crop_image_format
-    if crop_image.attached? && !crop_image.content_type.in?(%w[image/png image/jpg image/jpeg])
-      errors.add(:crop_image, 'must be a PNG, JPG, or JPEG')
+    return unless crop_image.attached?
+
+    allowed_types = %w[
+      image/png
+      image/jpg
+      image/jpeg
+      image/gif
+      image/bmp
+      image/webp
+      image/tiff
+      image/x-icon
+      image/vnd.microsoft.icon
+      image/heif
+      image/heic
+      image/svg+xml
+    ]
+
+    unless crop_image.content_type.in?(allowed_types)
+      errors.add(:crop_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
     end
   end
 
