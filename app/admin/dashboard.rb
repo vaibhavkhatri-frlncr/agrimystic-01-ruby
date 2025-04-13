@@ -30,17 +30,31 @@ ActiveAdmin.register_page "Dashboard" do
                 end
               end
             else
-              div class: "empty-message" do
-                span "🗃️ No Products Recorded"
-                small "Add products to this category to see them here."
+              div class: "empty-message", style: "text-align: center; padding: 10px; background-color: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center;" do
+                span style: "font-size: 24px; margin-right: 10px;" do
+                  "🗃️"
+                end
+                span "No Products Recorded"
+                small do
+                  "Add products to this category to see them here."
+                  a "Add Product", href: new_admin_product_path, style: "color: #007bff; margin-left: 5px;"
+                end
               end
             end
           end
         end
       else
-        div class: "empty-message" do
-          span "🚫 No Categories Found"
-          small "Start by creating a new category."
+        div class: "empty-message", style: "text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px;" do
+          span style: "font-size: 30px;" do
+            "🚫"
+          end
+          br
+          span "No Categories Found"
+          br
+          small do
+            "Start by creating a new category."
+            a "Create Category", href: new_admin_category_path, style: "color: #007bff;"
+          end
         end
       end
     end
@@ -56,17 +70,31 @@ ActiveAdmin.register_page "Dashboard" do
             if crop.crop_schedule.present?
               crop.crop_schedule.heading
             else
-              div class: "empty-message" do
-                span "📅 No Schedule Recorded"
-                small "Add a schedule to this crop to see it here."
+              div class: "empty-message", style: "text-align: center; padding: 10px; background-color: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center;" do
+                span style: "font-size: 24px; margin-right: 10px;" do
+                  "📅"
+                end
+                span "No Schedule Recorded"
+                small do
+                  "Add a schedule to this crop to see it here."
+                  a "Add Schedule", href: new_admin_crop_schedule_path, style: "color: #007bff; margin-left: 5px;"
+                end
               end
             end
           end
         end
       else
-        div class: "empty-message" do
-          span "🌱 No Crops Found"
-          small "Add crops to manage their schedule."
+        div class: "empty-message", style: "text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px;" do
+          span style: "font-size: 30px;" do
+            "🌱"
+          end
+          br
+          span "No Crops Found"
+          br
+          small do
+            "Add crops to manage their schedule."
+            a "Create Crop", href: new_admin_crop_path, style: "color: #007bff;"
+          end
         end
       end
     end
@@ -86,17 +114,31 @@ ActiveAdmin.register_page "Dashboard" do
                 end
               end
             else
-              div class: "empty-message" do
-                span "🦠 No Diseases Recorded"
-                small "Add diseases to this crop to see them here."
+              div class: "empty-message", style: "text-align: center; padding: 10px; background-color: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center;" do
+                span style: "font-size: 24px; margin-right: 10px;" do
+                  "🦠"
+                end
+                span "No Diseases Recorded"
+                small do
+                  "Add diseases to this crop to see them here."
+                  a "Add Disease", href: new_admin_crop_disease_path, style: "color: #007bff; margin-left: 5px;"
+                end
               end
             end
           end
         end
       else
-        div class: "empty-message" do
-          span "🌾 No Crops Available"
-          small "Add crops to manage their diseases."
+        div class: "empty-message", style: "text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px;" do
+          span style: "font-size: 30px;" do
+            "🌾"
+          end
+          br
+          span "No Crops Available"
+          br
+          small do
+            "Add crops to manage their diseases."
+            a "Create Crop", href: new_admin_crop_path, style: "color: #007bff;"
+          end
         end
       end
     end
@@ -113,9 +155,17 @@ ActiveAdmin.register_page "Dashboard" do
               end
             end
           else
-            div class: "empty-message" do
-              span "📦 No Categories Yet"
-              small "You can add categories for your products."
+            div class: "empty-message", style: "text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px;" do
+              span style: "font-size: 28px;" do
+                "📦"
+              end
+              br
+              span "No Categories Yet"
+              br
+              small do
+                "You can add categories for your products."
+                a "Create Category", href: new_admin_category_path, style: "color: #007bff;"
+              end
             end
           end
         end
@@ -131,9 +181,17 @@ ActiveAdmin.register_page "Dashboard" do
               end
             end
           else
-            div class: "empty-message" do
-              span "📞 No Helpline Numbers"
-              small "You can add support numbers for various regions."
+            div class: "empty-message", style: "text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px;" do
+              span style: "font-size: 28px;" do
+                "📞"
+              end
+              br
+              span "No Helpline Numbers"
+              br
+              small do
+                "You can add support numbers for various regions."
+                a "Create Helpline", href: new_admin_helpline_number_path, style: "color: #007bff;"
+              end
             end
           end
         end

@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 
+  root to: redirect('/admin')
+
   post 'account/signup', to: 'accounts#signup'
   post 'account/verify_signup_otp', to: 'accounts#verify_signup_otp'
   post 'account/login', to: 'accounts#login'
