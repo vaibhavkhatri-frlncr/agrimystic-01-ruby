@@ -3,24 +3,23 @@ class AccountAdapter
 
   def login_account(account_params)
     Rails.logger.info "🔍 Received account_params: #{account_params.inspect}"
-
+    Rails.logger.info "🔍 Received account_params.full_phone_number: #{account_params.full_phone_number.inspect}"
+    Rails.logger.info "🔍 Received account_params['full_phone_number']: #{account_params['full_phone_number'].inspect}"
+    Rails.logger.info "🔍 Received account_params[:full_phone_number]: #{account_params[:full_phone_number].inspect}"
     phone = Phonelib.parse(account_params.full_phone_number).sanitized
     Rails.logger.info "📞 Parsed phone: #{phone}"
 
     account = Account.find_by(full_phone_number: phone, otp_verified: true)
 
     unless account.present?
-      Rails.logger.warn "⚠️ Account not found for phone: #{phone}"
       broadcast(:account_not_found)
       return
     end
 
     if account.authenticate(account_params.password)
-      Rails.logger.info "✅ Password authentication successful for account ID: #{account.id}"
       token, refresh_token = generate_tokens(account.id)
       broadcast(:successful_login, account, token, refresh_token)
     else
-      Rails.logger.warn "❌ Password authentication failed for account ID: #{account.id}"
       broadcast(:failed_login)
     end
   end
