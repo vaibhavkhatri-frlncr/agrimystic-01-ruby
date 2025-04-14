@@ -40,6 +40,7 @@ ActiveAdmin.register Account do
       row :first_name
       row :last_name
       row :full_phone_number
+      row :email
       row :address
       row :state
       row :district

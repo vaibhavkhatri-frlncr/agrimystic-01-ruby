@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   put 'account/details_update', to: 'accounts#profile_details_update'
   post 'account/phone_update_otp_send', to: 'accounts#phone_update_otp_send'
   put 'account/phone_update_otp_verify', to: 'accounts#phone_update_otp_verify'
+  post 'account/email_update_otp_send', to: 'accounts#email_update_otp_send'
+  put 'account/email_update_otp_verify', to: 'accounts#email_update_otp_verify'
 
   resources :products, only: [:index, :show]
   get 'product/search', to: 'products#search'

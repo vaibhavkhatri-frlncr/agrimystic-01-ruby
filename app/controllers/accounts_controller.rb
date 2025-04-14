@@ -1,6 +1,6 @@
 class AccountsController < ApplicationController
-  before_action :validate_json_web_token, only: [:verify_signup_otp, :verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify]
-  before_action :check_account_activated, only: [:verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify]
+  before_action :validate_json_web_token, only: [:verify_signup_otp, :verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify, :email_update_otp_send, :email_update_otp_verify]
+  before_action :check_account_activated, only: [:verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify, :email_update_otp_send, :email_update_otp_verify]
 
   def signup
     json_params = jsonapi_deserialize(params)
@@ -173,6 +173,94 @@ class AccountsController < ApplicationController
     end
   end
 
+  def email_update_otp_send
+    new_email = params[:email]
+
+    return render json: { errors: [{ email: 'Email is required' }] }, status: :unprocessable_entity if new_email.blank?
+
+    current_email = current_user.email
+
+    if current_email.nil?
+      new_email_otp = EmailOtp.new(email: new_email)
+
+      if new_email_otp.save
+        render json: {
+          new_email_token: generate_otp_token(new_email_otp, 'update email'),
+          message: 'OTP sent to new email address'
+        }, status: :created
+      else
+        render json: { errors: format_activerecord_errors(new_email_otp.errors) }, status: :unprocessable_entity
+      end
+      return
+    end
+
+    if new_email.downcase == current_email.downcase
+      return render json: { errors: [{ email: 'New email must be different from current email' }] }, status: :unprocessable_entity
+    end
+
+    if Account.where(email: new_email, otp_verified: true).exists?
+      return render json: { errors: [{ email: 'This email is already taken' }] }, status: :unprocessable_entity
+    end
+
+    old_email_otp = EmailOtp.new(email: current_email)
+    new_email_otp = EmailOtp.new(email: new_email)
+
+    if old_email_otp.save && new_email_otp.save
+      render json: {
+        old_email_token: generate_otp_token(old_email_otp, 'change email'),
+        new_email_token: generate_otp_token(new_email_otp, 'change email'),
+        message: 'OTP sent to both current and new email addresses'
+      }, status: :created
+    else
+      errors = format_activerecord_errors(old_email_otp.errors) + format_activerecord_errors(new_email_otp.errors)
+      render json: { errors: errors }, status: :unprocessable_entity
+    end
+  end
+
+  def email_update_otp_verify
+    new_email_pin = params[:new_email_pin]
+    old_email_pin = params[:old_email_pin]
+
+    new_email_token = request.headers[:HTTP_NEW_EMAIL_TOKEN]
+    old_email_token = request.headers[:HTTP_OLD_EMAIL_TOKEN]
+
+    current_email = current_user.email
+
+    errors = []
+
+    if current_email.nil?
+      new_email_otp = validate_email_otp(new_email_token, new_email_pin)
+      errors << { new_email_pin: 'Invalid or expired OTP' } unless new_email_otp
+
+      if errors.any?
+        return render json: { errors: errors }, status: :unauthorized
+      end
+
+      if current_user.update(email: new_email_otp.email)
+        render json: { message: 'Email updated successfully' }, status: :ok
+      else
+        render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
+      end
+      return
+    end
+
+    old_email_otp = validate_email_otp(old_email_token, old_email_pin)
+    new_email_otp = validate_email_otp(new_email_token, new_email_pin)
+
+    errors << { old_email_pin: 'Invalid or expired OTP' } unless old_email_otp
+    errors << { new_email_pin: 'Invalid or expired OTP' } unless new_email_otp
+
+    if errors.any?
+      return render json: { errors: errors }, status: :unauthorized
+    end
+
+    if current_user.update(email: new_email_otp.email)
+      render json: { message: 'Email updated successfully' }, status: :ok
+    else
+      render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def create_or_update_address(account, params)
@@ -223,6 +311,24 @@ class AccountsController < ApplicationController
     sms_otp.update!(activated: true)
     # sms_otp.destroy
     sms_otp
+  rescue *ERROR_CLASSES, ActiveRecord::RecordNotFound
+    false
+  end
+
+  def validate_email_otp(token, pin)
+    token = JsonWebToken.decode(token)
+
+    begin
+      email_otp = EmailOtp.find(token&.id)
+    rescue ActiveRecord::RecordNotFound
+      return false
+    end
+
+    return false if email_otp.valid_until < Time.current || email_otp.pin.to_s != pin.to_s
+
+    email_otp.update!(activated: true)
+    email_otp.destroy
+    email_otp
   rescue *ERROR_CLASSES, ActiveRecord::RecordNotFound
     false
   end

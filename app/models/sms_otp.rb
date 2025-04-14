@@ -11,8 +11,6 @@ class SmsOtp < ApplicationRecord
 	validate :valid_phone_number
 	validates :full_phone_number, presence: true
 
-	attr_reader :phone
-
 	def generate_pin_and_valid_date
 		self.pin = 1234
 		self.valid_until = Time.current + 5.minutes
