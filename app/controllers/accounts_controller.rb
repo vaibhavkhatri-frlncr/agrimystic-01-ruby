@@ -42,11 +42,7 @@ class AccountsController < ApplicationController
   end
 
   def login
-    deserialized_params = jsonapi_deserialize(params)
-    Rails.logger.info "🔍 Deserialized params: #{deserialized_params.inspect}"
-
-    account = OpenStruct.new(deserialized_params)
-    Rails.logger.info "🔍 OpenStruct account: #{account.inspect}"
+    account = OpenStruct.new(jsonapi_deserialize(params))
 
     output = AccountAdapter.new
 
