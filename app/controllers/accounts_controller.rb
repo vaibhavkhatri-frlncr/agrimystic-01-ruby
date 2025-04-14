@@ -180,6 +180,10 @@ class AccountsController < ApplicationController
 
     current_email = current_user.email
 
+    if Account.where(email: new_email.downcase, otp_verified: true).where.not(id: current_user.id).exists?
+      return render json: { errors: [{ email: 'This email is already taken' }] }, status: :unprocessable_entity
+    end
+
     if current_email.nil?
       new_email_otp = EmailOtp.new(email: new_email)
 
@@ -196,10 +200,6 @@ class AccountsController < ApplicationController
 
     if new_email.downcase == current_email.downcase
       return render json: { errors: [{ email: 'New email must be different from current email' }] }, status: :unprocessable_entity
-    end
-
-    if Account.where(email: new_email, otp_verified: true).exists?
-      return render json: { errors: [{ email: 'This email is already taken' }] }, status: :unprocessable_entity
     end
 
     old_email_otp = EmailOtp.new(email: current_email)
@@ -327,7 +327,7 @@ class AccountsController < ApplicationController
     return false if email_otp.valid_until < Time.current || email_otp.pin.to_s != pin.to_s
 
     email_otp.update!(activated: true)
-    email_otp.destroy
+    # email_otp.destroy
     email_otp
   rescue *ERROR_CLASSES, ActiveRecord::RecordNotFound
     false
