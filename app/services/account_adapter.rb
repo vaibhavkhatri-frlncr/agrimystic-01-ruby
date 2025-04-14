@@ -2,6 +2,7 @@ class AccountAdapter
   include Wisper::Publisher
 
   def login_account(account_params)
+    byebug
     phone = Phonelib.parse(account_params.full_phone_number).sanitized
 
     account = Account.find_by(full_phone_number: phone, otp_verified: true)
