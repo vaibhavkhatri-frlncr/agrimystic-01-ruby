@@ -11,7 +11,7 @@ class AccountAdapter
       return
     end
 
-    if account.authenticate(account_params.password)
+    if account.authenticate(account_params['password'])
       token, refresh_token = generate_tokens(account.id)
       broadcast(:successful_login, account, token, refresh_token)
     else
