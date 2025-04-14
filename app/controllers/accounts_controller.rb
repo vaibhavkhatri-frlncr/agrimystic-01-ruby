@@ -42,26 +42,30 @@ class AccountsController < ApplicationController
   end
 
   def login
-    account = OpenStruct.new(jsonapi_deserialize(params))
-    
+    deserialized_params = jsonapi_deserialize(params)
+    Rails.logger.info "🔍 Deserialized params: #{deserialized_params.inspect}"
+
+    account = OpenStruct.new(deserialized_params)
+    Rails.logger.info "🔍 OpenStruct account: #{account.inspect}"
+
     output = AccountAdapter.new
-    
+
     output.on(:account_not_found) do
       render json: {
         errors: [{ failed_login: 'Account not found, or not activated' }]
       }, status: :unprocessable_entity
     end
-    
+
     output.on(:failed_login) do
       render json: {
         errors: [{ failed_login: 'Incorrect password' }]
       }, status: :unauthorized
     end
-    
+
     output.on(:successful_login) do |account, token, refresh_token|
       render json: { meta: { token: token, refresh_token: refresh_token, id: account.id } }
     end
-    
+
     output.login_account(account)
   end
 
