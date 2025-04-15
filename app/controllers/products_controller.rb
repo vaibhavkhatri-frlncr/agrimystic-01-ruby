@@ -21,10 +21,10 @@ class ProductsController < ApplicationController
       if @products.present?
         render json: ProductSerializer.new(@products), status: :ok
       else
-        render json: { errors: [{ message: 'No products found.' }] }, status: :not_found
+        render json: { errors: [{ message: 'No products found' }] }, status: :not_found
       end
     else
-      render json: { errors: [{ message: 'Search query can\'t be blank.' }] }, status: :unprocessable_entity
+      render json: { errors: [{ message: 'Search query can\'t be blank' }] }, status: :unprocessable_entity
     end
   end
 
@@ -34,7 +34,7 @@ class ProductsController < ApplicationController
     @product = Product.find_by(id: params[:id])
 
     if @product.nil?
-      render json: { errors: [{ message: "Product with id #{params[:id]} doesn\'t exists." }] }, status: :not_found
+      render json: { errors: [{ message: "Product with id #{params[:id]} doesn\'t exists" }] }, status: :not_found
     end
   end
 end

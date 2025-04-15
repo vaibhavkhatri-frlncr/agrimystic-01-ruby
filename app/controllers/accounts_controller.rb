@@ -79,7 +79,7 @@ class AccountsController < ApplicationController
       end
     end
 
-    @sms_otp = SmsOtp.new(full_phone_number: phone)
+    @sms_otp = SmsOtp.new(full_phone_number: phone, purpose: purpose)
 
     if @sms_otp.save
       render json: { token: generate_otp_token(@sms_otp, purpose), message: "OTP sent for #{purpose}" }, status: :created
@@ -133,8 +133,8 @@ class AccountsController < ApplicationController
       return render json: { errors: [{ phone: 'This phone number is already taken' }] }, status: :unprocessable_entity
     end
 
-    old_phone_otp = SmsOtp.new(full_phone_number: parsed_current_phone)
-    new_phone_otp = SmsOtp.new(full_phone_number: parsed_new_phone)
+    old_phone_otp = SmsOtp.new(full_phone_number: parsed_current_phone, purpose: 'change phone number')
+    new_phone_otp = SmsOtp.new(full_phone_number: parsed_new_phone, purpose: 'change phone number')
 
     if old_phone_otp.save && new_phone_otp.save
       render json: {

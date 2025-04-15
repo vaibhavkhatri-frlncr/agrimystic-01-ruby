@@ -9,7 +9,7 @@ class AddressesController < ApplicationController
     if addresses.any?
       render json: AddressSerializer.new(addresses), status: :ok
     else
-      render json: { errors: [{ message: 'No addresses found.' }] }, status: :not_found
+      render json: { errors: [{ message: 'No addresses found' }] }, status: :not_found
     end
   end
 
@@ -49,13 +49,13 @@ class AddressesController < ApplicationController
   
     if total_addresses <= 1
       render json: {
-        errors: [{ message: 'At least one address must be present. You cannot delete your only saved address.' }]
+        errors: [{ message: 'At least one address must be present. You cannot delete your only saved address' }]
       }, status: :unprocessable_entity and return
     end
   
     if @address.default_address
       render json: {
-        errors: [{ message: 'Cannot delete the default address. Please set another address as default before deleting this one.' }]
+        errors: [{ message: 'Cannot delete the default address. Please set another address as default before deleting this one' }]
       }, status: :unprocessable_entity and return
     end
   
@@ -63,7 +63,7 @@ class AddressesController < ApplicationController
       render json: { message: 'Address deleted successfully.' }, status: :ok
     else
       render json: {
-        errors: [{ message: 'Something went wrong while trying to delete the address. Please try again later.' }]
+        errors: [{ message: 'Something went wrong while trying to delete the address. Please try again later' }]
       }, status: :unprocessable_entity
     end
   end  
@@ -74,7 +74,7 @@ class AddressesController < ApplicationController
     @address = current_user.addresses.find_by(id: params[:id])
 
     if @address.nil?
-      render json: { errors: [{ message: "No address found with ID #{params[:id]} for the current user." }] }, status: :not_found
+      render json: { errors: [{ message: "No address found with ID #{params[:id]} for the current user" }] }, status: :not_found
     end
   end
 

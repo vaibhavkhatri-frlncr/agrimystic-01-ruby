@@ -8,7 +8,7 @@ class CategoriesController < ApplicationController
     if categories.any?
       render json: CategorySerializer.new(categories), status: :ok
     else
-      render json: { errors: { message: 'No categories found.' } }, status: :not_found
+      render json: { errors: { message: 'No categories found' } }, status: :not_found
     end
   end
 end

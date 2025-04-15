@@ -17,7 +17,7 @@ class SmsOtp < ApplicationRecord
 	end
 
 	def send_pin_via_sms
-		message = "Your Pin Number is #{pin}"
+		message = generate_otp_message
 		txt = SendSms.new("+#{full_phone_number}", message)
 		txt.call
 	end
@@ -33,5 +33,20 @@ class SmsOtp < ApplicationRecord
 		unless Phonelib.valid?(full_phone_number)
 			errors.add(:full_phone_number, 'Invalid or Unrecognized Phone Number')
 		end
+	end
+
+	def generate_otp_message
+		base_message = case purpose
+			when 'signup'
+				"Welcome to Agrimystic! Your sign-up OTP is #{pin}."
+			when 'reset password'
+				"Use OTP #{pin} to reset your Agrimystic password."
+			when 'change phone number'
+				"Use OTP #{pin} to confirm your phone number change on Agrimystic."
+			else
+				"Your Agrimystic OTP is #{pin}."
+			end
+
+		"#{base_message} It is valid for 5 minutes."
 	end
 end
