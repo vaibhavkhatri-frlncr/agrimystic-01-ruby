@@ -5,8 +5,8 @@ class CartProductSerializer < BaseSerializer
     cart_product.product.category.name
   end
 
-  attribute :product_display_picture do |cart_product|
-    base_url + Rails.application.routes.url_helpers.rails_blob_path(cart_product.product.display_picture, only_path: true) if cart_product.product.display_picture.attached?
+  attribute :product_image do |cart_product|
+    base_url + Rails.application.routes.url_helpers.rails_blob_path(cart_product.product.product_image, only_path: true) if cart_product.product.product_image.attached?
   end
 
   attribute :product_name do |cart_product|

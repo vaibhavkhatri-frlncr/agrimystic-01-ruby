@@ -1,5 +1,8 @@
 class Address < ApplicationRecord
+  self.table_name = :addresses
+
   belongs_to :account
+  has_many :orders
 
   before_validation :titleize_address_fields
 

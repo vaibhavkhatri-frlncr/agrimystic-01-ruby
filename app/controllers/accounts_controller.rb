@@ -35,7 +35,7 @@ class AccountsController < ApplicationController
       return render json: { errors: [{ account: 'Account not found' }] }, status: :unprocessable_entity unless account
 
       account.update!(otp_verified: true)
-      render json: { token: generate_account_token(account), message: 'OTP verified successfully' }, status: :ok
+      render json: { message: 'OTP verified successfully' }, status: :ok
     else
       render json: { errors: [{ pin: 'Invalid or expired OTP' }] }, status: :unprocessable_entity
     end

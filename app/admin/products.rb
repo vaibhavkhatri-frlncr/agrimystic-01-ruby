@@ -13,7 +13,7 @@ ActiveAdmin.register Product do
   filter :manufacturer
   filter :dosage
   filter :features
-  filter :total_price
+  filter :total_price, label: 'Total Inventory Value'
   filter :created_at
   filter :updated_at
 
@@ -55,7 +55,7 @@ ActiveAdmin.register Product do
     f.inputs 'Product Variants' do
       f.has_many :product_variants, heading: 'Product Variants', new_record: 'Add Variant' do |v|
         v.input :size
-        v.input :price
+        v.input :price, hint: 'Enter price in ₹'
         v.input :quantity
         v.input :_destroy, as: :boolean, label: 'Remove Variant' unless v.object.new_record?
       end
@@ -76,7 +76,9 @@ ActiveAdmin.register Product do
       row :dosage
       row :features
       row :description
-      row :total_price
+      row 'Total Inventory Value' do |product|
+        "₹#{product.total_price}"
+      end
       row :images do |product|
         if product.images.attached?
           product.images.map.with_index(1) do |img, index|
@@ -94,9 +96,11 @@ ActiveAdmin.register Product do
       table_for product.product_variants.order(:created_at) do
         column('No.') { |variant| product.product_variants.order(:created_at).index(variant) + 1 }
         column :size
-        column :price
+        column('Price per unit') { |variant| "₹#{variant.price}" }
         column :quantity
-        column :total_price
+        column('Total Value') { |variant| "₹#{variant.price * variant.quantity}" }
+        column :created_at
+        column :updated_at
       end
     end
   end
@@ -115,13 +119,13 @@ ActiveAdmin.register Product do
     column :name
     column :code
     column :manufacturer
-    column :total_price
+    column('Total Inventory Value') { |product| "₹#{product.total_price}" }
 
     actions
 
     table_for Product do
-      column('Total Product') { products.count }
-      column('Total Amount') { products.sum(:total_price) }
+      column('Total Products') { Product.count }
+      column('Total Amount') { "₹#{Product.sum(:total_price)}" }
     end
   end
 

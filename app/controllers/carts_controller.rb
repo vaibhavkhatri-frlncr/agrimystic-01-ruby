@@ -12,12 +12,12 @@ class CartsController < ApplicationController
         if is_product_variant_stock_available
           @cart_product = CartProduct.find_or_initialize_by(cart_id: @cart.id, product_variant_id: @product_variant.id)
           manage_cart_on_add_product
-          render json: { data: [{ message: "#{@product_variant.product.name} added to cart successfully." }] }, status: :ok
+          render json: { data: [{ message: "#{@product_variant.product.name} added to cart successfully" }] }, status: :ok
         else
-          raise StandardError, "#{@product_variant.product.name.capitalize} variant is out of stock as per your cart details. Now you can add only #{@product_variant.quantity - (@cart_product&.quantity || 0)} unit(s) of it to your cart."
+          raise StandardError, "#{@product_variant.product.name.capitalize} variant is out of stock as per your cart details. Now you can add only #{@product_variant.quantity - (@cart_product&.quantity || 0)} unit(s) of it to your cart"
         end
       else
-        render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist." }] }, status: :not_found
+        render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist" }] }, status: :not_found
       end
     end
   rescue StandardError => e
@@ -33,7 +33,7 @@ class CartsController < ApplicationController
         @cart_product = CartProduct.find_or_initialize_by(cart_id: @cart.id, product_variant_id: @product_variant.id)
         manage_cart_on_remove_product
       else
-        render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist." }] }, status: :not_found
+        render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist" }] }, status: :not_found
       end
     end
   rescue StandardError => e
@@ -72,7 +72,7 @@ class CartsController < ApplicationController
   def manage_cart_on_remove_product
     @cart.total_price -= @price * params[:quantity].to_i
     @cart_product.quantity -= params[:quantity].to_i
-    @cart_product.quantity < 0 ? (return render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist in cart." }] }, status: :not_found) : (render json: { data: [{ message: "#{@product_variant.product.name} removed from cart successfully." }] }, status: :ok)
+    @cart_product.quantity < 0 ? (return render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist in cart" }] }, status: :not_found) : (render json: { data: [{ message: "#{@product_variant.product.name} removed from cart successfully" }] }, status: :ok)
     @cart_product.save
     @cart.save
     @cart_product.destroy if @cart_product.quantity.zero?

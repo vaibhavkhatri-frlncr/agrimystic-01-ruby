@@ -14,6 +14,7 @@ class Account < ApplicationRecord
 	has_many :cart_products, through: :cart
 	has_many :products, through: :cart_products
 	has_many :addresses, dependent: :destroy
+	has_many :orders, dependent: :destroy
 
 	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: true
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true

@@ -17,7 +17,15 @@ ActiveAdmin.register Account do
   config.sort_order = 'created_at_desc'
 
   form do |f|
-    f.semantic_errors
+    if f.object.errors[:base].any?
+      div style: 'background-color: #ffe6e6; border: 1px solid #ff4d4d; padding: 10px; margin-bottom: 20px; color: #d8000c; font-weight: bold;' do
+        ul style: 'padding-left: 20px; margin: 0;' do
+          f.object.errors[:base].each do |msg|
+            li "• #{msg}"
+          end
+        end
+      end
+    end
 
     f.inputs do
       f.input :full_name
@@ -53,7 +61,7 @@ ActiveAdmin.register Account do
       row :updated_at
     end
 
-    panel 'Addresses' do
+    panel 'Account Addresses' do
       if resource.addresses.any?
         table_for resource.addresses.order(created_at: :asc) do
           column('No.') { |address| resource.addresses.order(:created_at).index(address) + 1 }
