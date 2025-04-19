@@ -31,6 +31,6 @@ Rails.application.routes.draw do
   resources :crop_diseases, only: [:index, :show]
   resources :addresses, only: [:index, :show, :create, :update, :destroy]
   resources :helpline_numbers, only: [:index]
-  resources :orders, only: [:create]
+  resources :orders, only: [:index, :create]
   put 'orders/:id/cancel', to: 'orders#cancel'
 end

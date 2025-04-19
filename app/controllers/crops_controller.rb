@@ -9,7 +9,7 @@ class CropsController < ApplicationController
     if crops.any?
       render json: CropSerializer.new(crops), status: :ok
     else
-      render json: { errors: { message: 'No crops found' } }, status: :not_found
+      render json: { errors: { message: 'No crops found.' } }, status: :not_found
     end
   end
 
@@ -24,7 +24,7 @@ class CropsController < ApplicationController
     @crop = Crop.find_by(id: params[:id])
 
     if @crop.nil?
-      render json: { errors: [{ message: "Crop with id #{params[:id]} doesn\'t exists" }] }, status: :not_found
+      render json: { errors: [{ message: "Crop with id #{params[:id]} doesn\'t exists." }] }, status: :not_found
     end
   end
 end

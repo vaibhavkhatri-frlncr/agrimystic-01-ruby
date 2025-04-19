@@ -6,15 +6,16 @@ class AddressesController < ApplicationController
   def index
     addresses = current_user.addresses
 
-    if addresses.any?
+    if addresses.present?
       render json: AddressSerializer.new(addresses), status: :ok
     else
-      render json: { errors: [{ message: 'No addresses found' }] }, status: :not_found
+      render json: { errors: [{ message: 'No addresses found.' }] }, status: :not_found
     end
   end
 
   def show
     return if @address.nil?
+
     render json: AddressSerializer.new(@address), status: :ok
   end
 
@@ -26,7 +27,7 @@ class AddressesController < ApplicationController
     end
 
     if address.save
-      render json: { address: AddressSerializer.new(address), message: 'Address created successfully' }, status: :created
+      render json: { message: 'Address created successfully' }, status: :created
     else
       render json: { errors: format_activerecord_errors(address.errors) }, status: :unprocessable_entity
     end

@@ -5,10 +5,10 @@ class CategoriesController < ApplicationController
   def index
     categories = Category.all
 
-    if categories.any?
+    if categories.present?
       render json: CategorySerializer.new(categories), status: :ok
     else
-      render json: { errors: { message: 'No categories found' } }, status: :not_found
+      render json: { errors: { message: 'No categories found.' } }, status: :not_found
     end
   end
 end

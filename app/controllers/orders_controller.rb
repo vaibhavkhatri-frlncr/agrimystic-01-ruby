@@ -2,6 +2,16 @@ class OrdersController < ApplicationController
   before_action :validate_json_web_token
   before_action :check_account_activated
 
+  def index
+    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc)
+
+    if orders.any?
+      render json: OrderSerializer.new(orders).serializable_hash, status: :ok
+    else
+      render json: { errors: [{ message: 'No orders found.' }] }, status: :not_found
+    end
+  end
+
   def create
     payment_method = params[:payment_method]
     address_id = params[:address_id]
@@ -79,20 +89,16 @@ class OrdersController < ApplicationController
         order.update!(razorpay_order_id: razorpay_order.id)
 
         render json: {
-          data: {
-            message: 'Order created successfully.',
-            order_id: order.id,
-            razorpay_order_id: razorpay_order.id,
-            amount:  (razorpay_order.amount / 100.0),
-            currency: razorpay_order.currency
-          }
+          message: 'Order created successfully.',
+          order_id: order.id,
+          razorpay_order_id: razorpay_order.id,
+          amount:  (razorpay_order.amount / 100.0),
+          currency: razorpay_order.currency
         }, status: :ok
       else
         render json: {
-          data: {
-            message: 'Order placed successfully with Cash on Delivery.',
-            order_id: order.id
-          }
+          message: 'Order placed successfully with Cash on Delivery.',
+          order_id: order.id
         }, status: :ok
       end
     end
@@ -127,7 +133,7 @@ class OrdersController < ApplicationController
       end
     end
 
-    render json: { data: { message: 'Order cancelled successfully.' } }, status: :ok
+    render json: { message: 'Order cancelled successfully.' }, status: :ok
   rescue => e
     render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
   end

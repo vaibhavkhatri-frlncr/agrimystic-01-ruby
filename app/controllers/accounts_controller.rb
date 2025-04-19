@@ -9,7 +9,7 @@ class AccountsController < ApplicationController
 
     if account
       if account.otp_verified?
-        return render json: { errors: [{ account: 'Account already registered' }] }, status: :unprocessable_entity
+        return render json: { errors: [{ account: 'Account already registered.' }] }, status: :unprocessable_entity
       elsif !account.update(json_params.except('full_phone_number'))
         return render json: { errors: format_activerecord_errors(account.errors) }, status: :unprocessable_entity
       end
@@ -32,10 +32,10 @@ class AccountsController < ApplicationController
     if validate_otp(params[:pin])
       account = Account.find_by(full_phone_number: @sms_otp.full_phone_number)
 
-      return render json: { errors: [{ account: 'Account not found' }] }, status: :unprocessable_entity unless account
+      return render json: { errors: [{ account: 'Account not found.' }] }, status: :unprocessable_entity unless account
 
       account.update!(otp_verified: true)
-      render json: { message: 'OTP verified successfully' }, status: :ok
+      render json: { message: 'OTP verified successfully.' }, status: :ok
     else
       render json: { errors: [{ pin: 'Invalid or expired OTP' }] }, status: :unprocessable_entity
     end
@@ -48,13 +48,13 @@ class AccountsController < ApplicationController
 
     output.on(:account_not_found) do
       render json: {
-        errors: [{ failed_login: 'Account not found, or not activated' }]
+        errors: [{ failed_login: 'Account not found, or not activated.' }]
       }, status: :unprocessable_entity
     end
 
     output.on(:failed_login) do
       render json: {
-        errors: [{ failed_login: 'Incorrect password' }]
+        errors: [{ failed_login: 'Incorrect password.' }]
       }, status: :unauthorized
     end
 
@@ -73,16 +73,16 @@ class AccountsController < ApplicationController
       account = Account.find_by(full_phone_number: phone, otp_verified: true)
 
       if account.nil?
-        return render json: { errors: [{ account: 'Account not found' }] }, status: :unprocessable_entity
+        return render json: { errors: [{ account: 'Account not found.' }] }, status: :unprocessable_entity
       elsif !account.activated
-        return render json: { errors: [{ account: 'Your account has been deactivated by the admin' }] }, status: :forbidden
+        return render json: { errors: [{ account: 'Your account has been deactivated by the admin.' }] }, status: :forbidden
       end
     end
 
     @sms_otp = SmsOtp.new(full_phone_number: phone, purpose: purpose)
 
     if @sms_otp.save
-      render json: { token: generate_otp_token(@sms_otp, purpose), message: "OTP sent for #{purpose}" }, status: :created
+      render json: { token: generate_otp_token(@sms_otp, purpose), message: "OTP sent for #{purpose}." }, status: :created
     else
       render json: { errors: format_activerecord_errors(@sms_otp.errors) }, status: :unprocessable_entity
     end
@@ -91,15 +91,15 @@ class AccountsController < ApplicationController
   def verify_otp
     if validate_otp(params[:pin])
       account = Account.find_by(full_phone_number: @sms_otp.full_phone_number)
-      render json: { token: generate_account_token(account), message: 'OTP verified successfully' }, status: :ok
+      render json: { token: generate_account_token(account), message: 'OTP verified successfully.' }, status: :ok
     else
-      render json: { errors: [{ pin: 'Invalid or expired OTP' }] }, status: :unprocessable_entity
+      render json: { errors: [{ pin: 'Invalid or expired OTP.' }] }, status: :unprocessable_entity
     end
   end
 
   def reset_password
     if current_user.update(password: params[:new_password])
-      render json: { message: 'Password reset successfully' }, status: :ok
+      render json: { message: 'Password reset successfully.' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
     end
@@ -111,7 +111,7 @@ class AccountsController < ApplicationController
 
   def profile_details_update
     if current_user.update(profile_details_params)
-      render json: AccountSerializer.new(current_user).serializable_hash, status: :ok
+      render json: { message: 'Account details updated successfully.' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
     end
@@ -120,17 +120,17 @@ class AccountsController < ApplicationController
   def phone_update_otp_send
     new_phone = params[:full_phone_number]
 
-    return render json: { errors: [{ phone: 'Phone number is required' }] }, status: :unprocessable_entity if new_phone.blank?
+    return render json: { errors: [{ phone: 'Phone number is required.' }] }, status: :unprocessable_entity if new_phone.blank?
 
     parsed_new_phone = Phonelib.parse(new_phone).sanitized
     parsed_current_phone = current_user.full_phone_number
 
     if parsed_new_phone == parsed_current_phone
-      return render json: { errors: [{ phone: 'New number must be different from current number' }] }, status: :unprocessable_entity
+      return render json: { errors: [{ phone: 'New number must be different from current number.' }] }, status: :unprocessable_entity
     end
 
     if Account.where(full_phone_number: parsed_new_phone, otp_verified: true).exists?
-      return render json: { errors: [{ phone: 'This phone number is already taken' }] }, status: :unprocessable_entity
+      return render json: { errors: [{ phone: 'This phone number is already taken.' }] }, status: :unprocessable_entity
     end
 
     old_phone_otp = SmsOtp.new(full_phone_number: parsed_current_phone, purpose: 'change phone number')
@@ -140,7 +140,7 @@ class AccountsController < ApplicationController
       render json: {
         old_phone_token: generate_otp_token(old_phone_otp, 'change phone number'),
         new_phone_token: generate_otp_token(new_phone_otp, 'change phone number'),
-        message: 'OTP sent to both current and new phone numbers'
+        message: 'OTP sent to both current and new phone numbers.'
       }, status: :created
     else
       errors = format_activerecord_errors(old_phone_otp.errors) + format_activerecord_errors(new_phone_otp.errors)
@@ -161,13 +161,13 @@ class AccountsController < ApplicationController
     new_phone_otp = validate_phone_otp(new_phone_token, new_phone_pin)
 
     errors = []
-    errors << { old_phone_pin: 'Invalid or expired OTP' } unless old_phone_otp
-    errors << { new_phone_pin: 'Invalid or expired OTP' } unless new_phone_otp
+    errors << { old_phone_pin: 'Invalid or expired OTP.' } unless old_phone_otp
+    errors << { new_phone_pin: 'Invalid or expired OTP.' } unless new_phone_otp
 
     return render json: { errors: errors }, status: :unauthorized if errors.any?
 
     if current_user.update(full_phone_number: new_phone_otp.full_phone_number)
-      render json: { message: 'Phone number updated successfully' }, status: :ok
+      render json: { message: 'Phone number updated successfully.' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
     end
@@ -176,12 +176,12 @@ class AccountsController < ApplicationController
   def email_update_otp_send
     new_email = params[:email]
 
-    return render json: { errors: [{ email: 'Email is required' }] }, status: :unprocessable_entity if new_email.blank?
+    return render json: { errors: [{ email: 'Email is required.' }] }, status: :unprocessable_entity if new_email.blank?
 
     current_email = current_user.email
 
     if Account.where(email: new_email.downcase, otp_verified: true).where.not(id: current_user.id).exists?
-      return render json: { errors: [{ email: 'This email is already taken' }] }, status: :unprocessable_entity
+      return render json: { errors: [{ email: 'This email is already taken.' }] }, status: :unprocessable_entity
     end
 
     if current_email.nil?
@@ -190,7 +190,7 @@ class AccountsController < ApplicationController
       if new_email_otp.save
         render json: {
           new_email_token: generate_otp_token(new_email_otp, 'update email'),
-          message: 'OTP sent to new email address'
+          message: 'OTP sent to new email address.'
         }, status: :created
       else
         render json: { errors: format_activerecord_errors(new_email_otp.errors) }, status: :unprocessable_entity
@@ -199,7 +199,7 @@ class AccountsController < ApplicationController
     end
 
     if new_email.downcase == current_email.downcase
-      return render json: { errors: [{ email: 'New email must be different from current email' }] }, status: :unprocessable_entity
+      return render json: { errors: [{ email: 'New email must be different from current email.' }] }, status: :unprocessable_entity
     end
 
     old_email_otp = EmailOtp.new(email: current_email)
@@ -209,7 +209,7 @@ class AccountsController < ApplicationController
       render json: {
         old_email_token: generate_otp_token(old_email_otp, 'change email'),
         new_email_token: generate_otp_token(new_email_otp, 'change email'),
-        message: 'OTP sent to both current and new email addresses'
+        message: 'OTP sent to both current and new email addresses.'
       }, status: :created
     else
       errors = format_activerecord_errors(old_email_otp.errors) + format_activerecord_errors(new_email_otp.errors)
@@ -230,14 +230,14 @@ class AccountsController < ApplicationController
 
     if current_email.nil?
       new_email_otp = validate_email_otp(new_email_token, new_email_pin)
-      errors << { new_email_pin: 'Invalid or expired OTP' } unless new_email_otp
+      errors << { new_email_pin: 'Invalid or expired OTP.' } unless new_email_otp
 
       if errors.any?
         return render json: { errors: errors }, status: :unauthorized
       end
 
       if current_user.update(email: new_email_otp.email)
-        render json: { message: 'Email updated successfully' }, status: :ok
+        render json: { message: 'Email updated successfully.' }, status: :ok
       else
         render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
       end
@@ -247,15 +247,15 @@ class AccountsController < ApplicationController
     old_email_otp = validate_email_otp(old_email_token, old_email_pin)
     new_email_otp = validate_email_otp(new_email_token, new_email_pin)
 
-    errors << { old_email_pin: 'Invalid or expired OTP' } unless old_email_otp
-    errors << { new_email_pin: 'Invalid or expired OTP' } unless new_email_otp
+    errors << { old_email_pin: 'Invalid or expired OTP.' } unless old_email_otp
+    errors << { new_email_pin: 'Invalid or expired OTP.' } unless new_email_otp
 
     if errors.any?
       return render json: { errors: errors }, status: :unauthorized
     end
 
     if current_user.update(email: new_email_otp.email)
-      render json: { message: 'Email updated successfully' }, status: :ok
+      render json: { message: 'Email updated successfully.' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
     end

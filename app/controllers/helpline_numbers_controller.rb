@@ -5,10 +5,10 @@ class HelplineNumbersController < ApplicationController
   def index
     helplines = HelplineNumber.all
 
-    if helplines.any?
+    if helplines.present?
       render json: HelplineNumberSerializer.new(helplines), status: :ok
     else
-      render json: { errors: { message: 'Helpline numbers are currently unavailable.' } }, status: :not_found
+      render json: { errors: { message: 'No helpline numbers found.' } }, status: :not_found
     end
   end
 end
