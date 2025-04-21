@@ -33,4 +33,7 @@ Rails.application.routes.draw do
   resources :helpline_numbers, only: [:index]
   resources :orders, only: [:index, :create]
   put 'orders/:id/cancel', to: 'orders#cancel'
+  post 'orders/:id/process_payment', to: 'orders#process_payment'
+  get 'orders/razorpay_api_key', to: 'orders#razorpay_api_key'
+  post 'orders/:id/payment_verification', to: 'orders#payment_verification'
 end

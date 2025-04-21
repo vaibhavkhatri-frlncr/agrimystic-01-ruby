@@ -1,6 +1,7 @@
 class OrdersController < ApplicationController
   before_action :validate_json_web_token
   before_action :check_account_activated
+  before_action :set_order, only: [:cancel, :process_payment, :payment_verification]
 
   def index
     orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc)
@@ -43,7 +44,7 @@ class OrdersController < ApplicationController
         account_id: current_user.id,
         address_id: address.id,
         payment_method: payment_method,
-        payment_status: payment_method == 'cod' ? 'pending' : 'created',
+        payment_status: 'pending',
         order_status: 'placed',
         total_amount: total_amount,
         placed_at: Time.current
@@ -81,19 +82,9 @@ class OrdersController < ApplicationController
       end
 
       if payment_method == 'online'
-        razorpay_order = Razorpay::Order.create(
-          amount: (total_amount * 100).to_i,
-          currency: 'INR',
-          receipt: "order_#{order.id}"
-        )
-        order.update!(razorpay_order_id: razorpay_order.id)
-
-        render json: {
+         render json: {
           message: 'Order created successfully.',
           order_id: order.id,
-          razorpay_order_id: razorpay_order.id,
-          amount:  (razorpay_order.amount / 100.0),
-          currency: razorpay_order.currency
         }, status: :ok
       else
         render json: {
@@ -109,25 +100,23 @@ class OrdersController < ApplicationController
   end
 
   def cancel
-    order = current_user.orders.find_by(id: params[:id])
-
-    if order.nil?
+    if @order.nil?
       return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
     end
 
-    if order.order_status == 'cancelled'
+    if @order.order_status == 'cancelled'
       return render json: { errors: [{ message: 'Order is already cancelled.' }] }, status: :unprocessable_entity
     end
 
-    if order.order_status != 'placed'
+    if @order.order_status != 'placed'
       return render json: { errors: [{ message: 'Order cannot be cancelled now.' }] }, status: :unprocessable_entity
     end
 
     ActiveRecord::Base.transaction do
-      order.update!(order_status: 'cancelled', cancelled_at: Time.current)
+      @order.update!(order_status: 'cancelled', cancelled_at: Time.current)
 
       # Restock products
-      order.order_products.each do |op|
+      @order.order_products.each do |op|
         variant = op.product_variant
         variant.update!(quantity: variant.quantity + op.quantity)
       end
@@ -136,5 +125,86 @@ class OrdersController < ApplicationController
     render json: { message: 'Order cancelled successfully.' }, status: :ok
   rescue => e
     render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
+  end
+
+  def process_payment
+    if @order.nil?
+      return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
+    end
+
+    if @order.payment_status == 'completed'
+      return render json: { errors: [{ message: 'Payment already completed.' }] }, status: :unprocessable_entity
+    end
+
+    begin
+      options = {
+        amount: (@order.total_amount * 100).to_i,
+        currency: 'INR',
+        receipt: "order_#{@order.id}"
+      }
+
+      # Create Razorpay order if one doesn't exist yet
+      unless @order.razorpay_order_id.present?
+        razorpay_order = Razorpay::Order.create(options)
+        @order.update!(razorpay_order_id: razorpay_order.id)
+      else
+        # Get existing order details from Razorpay
+        razorpay_order = Razorpay::Order.fetch(@order.razorpay_order_id)
+      end
+
+      render json: {
+        success: true,
+        order: {
+          id: razorpay_order.id,
+          amount: razorpay_order.amount / 100.0,
+          currency: razorpay_order.currency
+        }
+      }, status: :ok
+    rescue Razorpay::Error => e
+      render json: { errors: [{ message: "Razorpay error: #{e.message}" }] }, status: :unprocessable_entity
+    end
+  end
+
+  def razorpay_api_key
+    render json: { key: ENV['RAZORPAY_KEY_ID'] }, status: :ok
+  end
+
+  def payment_verification
+    if @order.nil?
+      return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
+    end
+
+    razorpay_payment_id = params[:razorpay_payment_id]
+    razorpay_order_id = params[:razorpay_order_id]
+    razorpay_signature = params[:razorpay_signature]
+
+    # Create signature body
+    body = "#{razorpay_order_id}|#{razorpay_payment_id}"
+
+    # Calculate expected signature
+    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['RAZORPAY_API_SECRET'], body)
+
+    # Verify signature
+    is_authentic = expected_signature == razorpay_signature
+
+    if is_authentic
+      # Update order with payment info
+      @order.update!(
+        payment_status: 'completed',
+        razorpay_payment_id: razorpay_payment_id,
+        paid_at: Time.current
+      )
+      render json: { success: true, message: 'Payment verified' }, payment_id: :razorpay_payment_id
+    else
+      render json: { success: false, message: 'Payment verification failed' }, status: :bad_request
+    end
+  rescue => e
+    render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
+  end
+
+  private
+
+  def set_order
+    @order = current_user.orders.find_by(id: params[:id].to_i)
   end
 end

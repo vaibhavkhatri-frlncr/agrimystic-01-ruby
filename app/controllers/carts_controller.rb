@@ -76,7 +76,7 @@ class CartsController < ApplicationController
   def manage_cart_on_remove_product
     @cart.total_price -= @price * params[:quantity].to_i
     @cart_product.quantity -= params[:quantity].to_i
-    @cart_product.quantity < 0 ? (return render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist in cart." }] }, status: :not_found) : (render json: { data: [{ message: "#{@product_variant.product.name} removed from cart successfully" }] }, status: :ok)
+    @cart_product.quantity < 0 ? (return render json: { errors: [{ message: "Product variant with id #{params[:product_variant_id]} doesn't exist in cart." }] }, status: :not_found) : (render json: { message: "#{@product_variant.product.name} removed from cart successfully" }, status: :ok)
     @cart_product.save
     @cart.save
     @cart_product.destroy if @cart_product.quantity.zero?
