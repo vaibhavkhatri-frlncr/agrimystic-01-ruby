@@ -168,8 +168,14 @@ class OrdersController < ApplicationController
     end
   end
 
+  # def razorpay_api_key
+  #   render json: { key: ENV['RAZORPAY_KEY_ID'] }, status: :ok
+  # end
+
   def razorpay_api_key
-    render json: { key: ENV['RAZORPAY_KEY_ID'] }, status: :ok
+    key = ENV['RAZORPAY_KEY_ID']
+    puts "[DEBUG] ENV['RAZORPAY_KEY_ID']: #{key} | PID: #{Process.pid} | Thread: #{Thread.current.object_id}"
+    render json: { key: key }, status: :ok
   end
 
   def payment_verification
