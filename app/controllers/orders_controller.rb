@@ -166,7 +166,13 @@ class OrdersController < ApplicationController
   end
 
   def razorpay_api_key
-    render json: { key: ENV['RAZORPAY_KEY_ID'] }, status: :ok
+    key = Rails.configuration.razorpay[:key_id]
+
+    if key.present?
+      render json: { key: key }, status: :ok
+    else
+      render json: { error: 'Razorpay key not configured.' }, status: :unprocessable_entity
+    end
   end
 
   def payment_verification

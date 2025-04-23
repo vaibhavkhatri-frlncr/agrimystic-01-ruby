@@ -68,6 +68,13 @@ Rails.application.configure do
     phone_number: ENV['TWILIO_PHONE_NUMBER']
   }
 
+  config.razorpay = {
+    key_id: ENV['RAZORPAY_KEY_ID'] || 'rzp_test_CwKTURultjyvxV',
+    key_secret: ENV['RAZORPAY_KEY_SECRET'] || 'B5Tc3qvntlkZ7CpZOmViCqE8'
+  }
+
+  # config.action_mailer.delivery_method = :letter_opener
+
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
