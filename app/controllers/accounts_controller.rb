@@ -263,6 +263,14 @@ class AccountsController < ApplicationController
 
   private
 
+  def profile_details_params
+    params.require(:account).permit(
+      :first_name,
+      :last_name,
+      :profile_image
+    )
+  end
+
   def create_or_update_address(account, params)
     address_attrs = {
       name: params['full_name'],
