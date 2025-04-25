@@ -15,7 +15,7 @@ class Order < ApplicationRecord
   scope :cancelled, -> { where(order_status: 'cancelled') }
   scope :recent, -> { order(created_at: :desc) }
 
-  def paid?
+  def completed?
     payment_status == 'completed'
   end
 
