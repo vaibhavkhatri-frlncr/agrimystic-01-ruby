@@ -30,10 +30,12 @@ Rails.application.routes.draw do
   resources :crop_schedules, only: [:show]
   resources :crop_diseases, only: [:index, :show]
   resources :addresses, only: [:index, :show, :create, :update, :destroy]
+  get 'address/google_maps_api_key', to: 'addresses#google_maps_api_key'
+
   resources :helpline_numbers, only: [:index]
   resources :orders, only: [:index, :create]
   put 'orders/:id/cancel', to: 'orders#cancel'
   post 'orders/:id/process_payment', to: 'orders#process_payment'
-  get 'orders/razorpay_api_key', to: 'orders#razorpay_api_key'
+  get 'order/razorpay_api_key', to: 'orders#razorpay_api_key'
   post 'orders/:id/payment_verification', to: 'orders#payment_verification'
 end

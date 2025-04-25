@@ -1,7 +1,7 @@
 class OrdersController < ApplicationController
   before_action :validate_json_web_token
   before_action :check_account_activated
-  before_action :set_order, only: [:cancel, :process_payment, :payment_verification]
+  before_action :set_order, only: %i[cancel process_payment payment_verification]
 
   def index
     orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc)
@@ -14,35 +14,34 @@ class OrdersController < ApplicationController
   end
 
   def create
-    payment_method = params[:payment_method]
-    address_id = params[:address_id]
-    product_variant_id = params[:product_variant_id] # Optional
-    quantity = params[:quantity].to_i > 0 ? params[:quantity].to_i : 1
+    payment_method       = order_params[:payment_method]
+    address              = current_user.addresses.find_by(id: order_params[:address_id])
+    variant_id           = order_params[:product_variant_id]
+    quantity             = order_params[:quantity].to_i.positive? ? order_params[:quantity].to_i : 1
 
-    address = current_user.addresses.find_by(id: address_id)
-    return render json: { errors: [{ message: 'Address not found.' }] }, status: :not_found unless address
+    return render(json: { errors: [{ message: 'Address not found.' }] }, status: :not_found) unless address
 
     ActiveRecord::Base.transaction do
-      # Buy Now Flow (Single item)
-      if product_variant_id.present?
-        variant = ProductVariant.find_by(id: product_variant_id)
-        return render json: { errors: [{ message: 'Product variant not found.' }] }, status: :not_found unless variant
+      if variant_id.present?
+        variant = ProductVariant.find_by(id: variant_id)
+        return render(json: { errors: [{ message: 'Product variant not found.' }] }, status: :not_found) unless variant
 
         if variant.quantity < quantity
-          return render json: { errors: [{ message: "Only #{variant.quantity} unit(s) available in stock." }] }, status: :unprocessable_entity
+          return render(json: { errors: [{ message: "Only #{variant.quantity} unit(s) available in stock." }] }, status: :unprocessable_entity)
         end
 
         total_amount = variant.price * quantity
       else
-        # Cart Flow
         cart = current_user.cart
-        return render json: { errors: [{ message: 'Cart is empty.' }] }, status: :unprocessable_entity if cart.cart_products.empty?
+        if cart.cart_products.empty?
+          return render(json: { errors: [{ message: 'Cart is empty.' }] }, status: :unprocessable_entity)
+        end
+
         total_amount = cart.total_price
       end
 
-      order = Order.create!(
-        account_id: current_user.id,
-        address_id: address.id,
+      order = current_user.orders.create!(
+        address: address,
         payment_method: payment_method,
         payment_status: 'pending',
         order_status: 'placed',
@@ -50,119 +49,83 @@ class OrdersController < ApplicationController
         placed_at: Time.current
       )
 
-      if product_variant_id.present?
-        OrderProduct.create!(
-          order_id: order.id,
-          product_variant_id: variant.id,
+      if variant_id.present?
+        order.order_products.create!(
+          product_variant: variant,
           quantity: quantity,
           price: variant.price,
           total_price: variant.price * quantity
         )
-        variant.update!(quantity: variant.quantity - quantity)
+        variant.decrement!(:quantity, quantity)
       else
-        current_user.cart.cart_products.each do |cart_product|
-          OrderProduct.create!(
-            order_id: order.id,
-            product_variant_id: cart_product.product_variant_id,
+        current_user.cart.cart_products.find_each do |cart_product|
+          variant = cart_product.product_variant
+          order.order_products.create!(
+            product_variant: variant,
             quantity: cart_product.quantity,
-            price: cart_product.product_variant.price,
-            total_price: cart_product.product_variant.price * cart_product.quantity
+            price: variant.price,
+            total_price: variant.price * cart_product.quantity
           )
-
-          cart_product.product_variant.update!(
-            quantity: cart_product.product_variant.quantity - cart_product.quantity
-          )
+          variant.decrement!(:quantity, cart_product.quantity)
         end
-      end
 
-      # Clear cart if cart flow
-      if product_variant_id.blank?
         current_user.cart.cart_products.destroy_all
         current_user.cart.update!(total_price: 0.0)
       end
 
-      if payment_method == 'online'
-         render json: {
-          message: 'Order created successfully.',
-          order_id: order.id,
-        }, status: :ok
-      else
-        render json: {
-          message: 'Order placed successfully with Cash on Delivery.',
-          order_id: order.id
-        }, status: :ok
-      end
+      status_message = if payment_method == 'online'
+                         { message: 'Order created successfully.', order_id: order.id }
+                       else
+                         { message: 'Order placed successfully with Cash on Delivery.', order_id: order.id }
+                       end
+
+      render json: status_message, status: :ok
     end
   rescue Razorpay::Error => e
     render json: { errors: [{ message: "Razorpay error: #{e.message}" }] }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
-    render json: { errors: [{ message: e.record.errors.full_messages.join(", ") }] }, status: :unprocessable_entity
+    render json: { errors: [{ message: e.record.errors.full_messages.join(', ') }] }, status: :unprocessable_entity
   end
 
   def cancel
-    if @order.nil?
-      return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
-    end
-
-    if @order.order_status == 'cancelled'
-      return render json: { errors: [{ message: 'Order is already cancelled.' }] }, status: :unprocessable_entity
-    end
-
-    if @order.order_status != 'placed'
-      return render json: { errors: [{ message: 'Order cannot be cancelled now.' }] }, status: :unprocessable_entity
-    end
+    return render(json: { errors: [{ message: 'Order not found.' }] }, status: :not_found) unless @order
+    return render(json: { errors: [{ message: 'Order is already cancelled.' }] }, status: :unprocessable_entity) if @order.cancelled?
+    return render(json: { errors: [{ message: 'Order cannot be cancelled now.' }] }, status: :unprocessable_entity) unless @order.placed?
 
     ActiveRecord::Base.transaction do
       @order.update!(order_status: 'cancelled', cancelled_at: Time.current)
-
-      # Restock products
       @order.order_products.each do |op|
-        variant = op.product_variant
-        variant.update!(quantity: variant.quantity + op.quantity)
+        op.product_variant.increment!(:quantity, op.quantity)
       end
     end
 
     render json: { message: 'Order cancelled successfully.' }, status: :ok
-  rescue => e
+  rescue StandardError => e
     render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
   end
 
   def process_payment
-    if @order.nil?
-      return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
-    end
+    return render(json: { errors: [{ message: 'Order not found.' }] }, status: :not_found) unless @order
+    return render(json: { errors: [{ message: 'Order is not set for online payment.' }] }, status: :unprocessable_entity) if @order.payment_method != 'online'
+    return render(json: { errors: [{ message: 'Payment already completed.' }] }, status: :unprocessable_entity) if @order.completed?
 
-    if @order.payment_status == 'completed'
-      return render json: { errors: [{ message: 'Payment already completed.' }] }, status: :unprocessable_entity
-    end
+    options = {
+      amount: (@order.total_amount * 100).to_i,
+      currency: 'INR',
+      receipt: "order_#{@order.id}"
+    }
 
-    begin
-      options = {
-        amount: (@order.total_amount * 100).to_i,
-        currency: 'INR',
-        receipt: "order_#{@order.id}"
-      }
+    razorpay_order = if @order.razorpay_order_id.present?
+                       Razorpay::Order.fetch(@order.razorpay_order_id)
+                     else
+                       new_order = Razorpay::Order.create(options)
+                       @order.update!(razorpay_order_id: new_order.id)
+                       new_order
+                     end
 
-      # Create Razorpay order if one doesn't exist yet
-      unless @order.razorpay_order_id.present?
-        razorpay_order = Razorpay::Order.create(options)
-        @order.update!(razorpay_order_id: razorpay_order.id)
-      else
-        # Get existing order details from Razorpay
-        razorpay_order = Razorpay::Order.fetch(@order.razorpay_order_id)
-      end
-
-      render json: {
-        success: true,
-        order: {
-          id: razorpay_order.id,
-          amount: razorpay_order.amount / 100.0,
-          currency: razorpay_order.currency
-        }
-      }, status: :ok
-    rescue Razorpay::Error => e
-      render json: { errors: [{ message: "Razorpay error: #{e.message}" }] }, status: :unprocessable_entity
-    end
+    render json: { success: true, order: { id: razorpay_order.id, amount: razorpay_order.amount, currency: razorpay_order.currency } }, status: :ok
+  rescue Razorpay::Error => e
+    render json: { errors: [{ message: "Razorpay error: #{e.message}" }] }, status: :unprocessable_entity
   end
 
   def razorpay_api_key
@@ -171,46 +134,58 @@ class OrdersController < ApplicationController
     if key.present?
       render json: { key: key }, status: :ok
     else
-      render json: { error: 'Razorpay key not configured.' }, status: :unprocessable_entity
+      render json: { errors: [{ message: 'Razorpay key not configured.' }] }, status: :unprocessable_entity
     end
   end
 
   def payment_verification
-    if @order.nil?
-      return render json: { errors: [{ message: 'Order not found.' }] }, status: :not_found
-    end
+    return render(json: { errors: [{ message: 'Order not found.' }] }, status: :not_found) unless @order
+    return render(json: { success: true, message: 'Payment already verified', payment_id: @order.razorpay_payment_id }, status: :ok) if @order.completed?
 
     razorpay_payment_id = params[:razorpay_payment_id]
-    razorpay_order_id = params[:razorpay_order_id]
-    razorpay_signature = params[:razorpay_signature]
+    razorpay_order_id   = params[:razorpay_order_id]
+    razorpay_signature  = params[:razorpay_signature]
 
-    # Create signature body
-    body = "#{razorpay_order_id}|#{razorpay_payment_id}"
-
-    # Calculate expected signature
-    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['RAZORPAY_API_SECRET'], body)
-
-    # Verify signature
-    is_authentic = expected_signature == razorpay_signature
-
-    if is_authentic
-      # Update order with payment info
-      @order.update!(
-        payment_status: 'completed',
-        razorpay_payment_id: razorpay_payment_id,
-        paid_at: Time.current
-      )
-      render json: { success: true, message: 'Payment verified' }, payment_id: :razorpay_payment_id
-    else
-      render json: { success: false, message: 'Payment verification failed' }, status: :bad_request
+    if razorpay_payment_id.blank? || razorpay_order_id.blank? || razorpay_signature.blank?
+      return render json: { success: false, message: 'Missing payment parameters' }, status: :bad_request
     end
-  rescue => e
-    render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
+
+    unless @order.razorpay_order_id == razorpay_order_id
+      return render json: { success: false, message: 'Order ID mismatch' }, status: :bad_request
+    end
+
+    begin
+      payment_attrs = {
+        'razorpay_order_id' => razorpay_order_id,
+        'razorpay_payment_id' => razorpay_payment_id,
+        'razorpay_signature' => razorpay_signature
+      }
+      if Razorpay::Utility.verify_payment_signature(payment_attrs)
+        ActiveRecord::Base.transaction do
+          payment = Razorpay::Payment.fetch(razorpay_payment_id)
+          if (payment.amount / 100.0) != @order.total_amount
+            raise "Payment amount mismatch: expected #{@order.total_amount}, got #{payment.amount / 100.0}"
+          end
+          @order.update!(payment_status: 'completed', order_status: 'processing', razorpay_payment_id: razorpay_payment_id, paid_at: Time.current)
+        end
+        render json: { success: true, message: 'Payment verified successfully', payment_id: razorpay_payment_id }, status: :ok
+      else
+        render json: { success: false, message: 'Payment signature verification failed' }, status: :bad_request
+      end
+    rescue Razorpay::Error => e
+      render json: { success: false, message: "Razorpay error: #{e.message}" }, status: :unprocessable_entity
+    rescue StandardError => e
+      render json: { errors: [{ message: e.message }] }, status: :unprocessable_entity
+    end
   end
 
   private
 
   def set_order
-    @order = current_user.orders.find_by(id: params[:id].to_i)
+    @order = current_user.orders.find_by(id: params[:id])
+  end
+
+  def order_params
+    params.permit(:payment_method, :address_id, :product_variant_id, :quantity)
   end
 end

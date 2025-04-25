@@ -27,7 +27,7 @@ class AddressesController < ApplicationController
     end
 
     if address.save
-      render json: { message: 'Address created successfully' }, status: :created
+      render json: { message: 'Address created successfully.' }, status: :created
     else
       render json: { errors: format_activerecord_errors(address.errors) }, status: :unprocessable_entity
     end
@@ -39,7 +39,7 @@ class AddressesController < ApplicationController
     end
 
     if @address.update(address_params)
-      render json: { address: AddressSerializer.new(@address), message: 'Address updated successfully' }, status: :ok
+      render json: { message: 'Address updated successfully.' }, status: :ok
     else
       render json: { errors: format_activerecord_errors(@address.errors) }, status: :unprocessable_entity
     end
@@ -47,19 +47,19 @@ class AddressesController < ApplicationController
 
   def destroy
     total_addresses = current_user.addresses.count
-  
+
     if total_addresses <= 1
       render json: {
         errors: [{ message: 'At least one address must be present. You cannot delete your only saved address' }]
       }, status: :unprocessable_entity and return
     end
-  
+
     if @address.default_address
       render json: {
         errors: [{ message: 'Cannot delete the default address. Please set another address as default before deleting this one' }]
       }, status: :unprocessable_entity and return
     end
-  
+
     if @address.destroy
       render json: { message: 'Address deleted successfully.' }, status: :ok
     else
@@ -67,7 +67,17 @@ class AddressesController < ApplicationController
         errors: [{ message: 'Something went wrong while trying to delete the address. Please try again later' }]
       }, status: :unprocessable_entity
     end
-  end  
+  end
+
+  def google_maps_api_key
+    key = Rails.configuration.google_maps[:api_key]
+
+    if key.present?
+      render json: { key: key }, status: :ok
+    else
+      render json: { errors: [{ message: 'Google Maps API key not configured.' }] }, status: :unprocessable_entity
+    end
+  end
 
   private
 

@@ -73,6 +73,10 @@ Rails.application.configure do
     key_secret: ENV['RAZORPAY_KEY_SECRET'] || 'B5Tc3qvntlkZ7CpZOmViCqE8'
   }
 
+  config.google_maps = {
+    api_key: ENV['GOOGLE_MAPS_API_KEY'] || 'AIzaSyDHWlmBspeJxGoTLINB82Xa2LF1LhKkC5A'
+  }
+
   # config.action_mailer.delivery_method = :letter_opener
 
   config.action_mailer.delivery_method = :smtp
