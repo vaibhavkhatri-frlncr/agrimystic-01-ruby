@@ -156,9 +156,9 @@ class OrdersController < ApplicationController
 
     begin
       payment_attrs = {
-        'razorpay_order_id' => razorpay_order_id,
-        'razorpay_payment_id' => razorpay_payment_id,
-        'razorpay_signature' => razorpay_signature
+        razorpay_order_id:   razorpay_order_id,
+        razorpay_payment_id: razorpay_payment_id,
+        razorpay_signature:  razorpay_signature
       }
       if Razorpay::Utility.verify_payment_signature(payment_attrs)
         ActiveRecord::Base.transaction do
