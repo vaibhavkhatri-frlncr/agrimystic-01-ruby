@@ -1,5 +1,5 @@
 {
-  "name": "farmersapp_01_ruby",
+  "name": "agrimystic_01_ruby",
   "private": true,
   "dependencies": {
     "@rails/ujs": "^6.0.0",
