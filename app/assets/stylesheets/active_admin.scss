@@ -34,12 +34,17 @@
   }
 }
 
-.status_tag.warning {
-  background-color: #ff9800; // or any yellow/orange tone
+.status_tag.yellow {
+  background-color: #ff9800;
   color: white;
 }
 
 .status_tag.blue {
-  background-color: #007bff;  /* Blue color */
+  background-color: #007bff;
+  color: white;
+}
+
+.status_tag.cyan {
+  background-color: #00BCD4;
   color: white;
 }

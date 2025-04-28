@@ -8,8 +8,8 @@ ActiveAdmin.register Order do
   filter :account
   filter :address_address, as: :string, label: 'Address'
   filter :payment_method, as: :select, collection: [['COD', 'cod'], ['Online', 'online']]
-  filter :payment_status, as: :select, collection: [['Pending', 'pending'], ['Paid', 'paid'], ['Failed', 'failed']]
-  filter :order_status, as: :select, collection: [['Placed', 'placed'], ['Shipped', 'shipped'], ['Delivered', 'delivered'], ['Cancelled', 'cancelled']]
+  filter :payment_status, as: :select, collection: [['Pending', 'pending'], ['Completed', 'completed'], ['Failed', 'failed']]
+  filter :order_status, as: :select, collection: [['Placed', 'placed'], ['Processing', 'processing'], ['Shipped', 'shipped'], ['Delivered', 'delivered'], ['Cancelled', 'cancelled']]
   filter :placed_at
   filter :paid_at
   filter :created_at
@@ -24,10 +24,10 @@ ActiveAdmin.register Order do
       end
       row :payment_status do |order|
         case order.payment_status
-        when 'created'
-          status_tag '✅ Created', class: 'status_tag yes'
+        when 'completed'
+          status_tag '✅ Completed', class: 'status_tag yes'
         when 'pending'
-          status_tag '⏳ Pending', class: 'status_tag warning'
+          status_tag '⏳ Pending', class: 'status_tag yellow'
         when 'failed'
           status_tag '❌ Failed', class: 'status_tag no'
         else
@@ -37,11 +37,13 @@ ActiveAdmin.register Order do
       row :order_status do |order|
         case order.order_status
         when 'placed'
-          status_tag 'Placed', class: 'status_tag warning'
+          status_tag 'Placed', class: 'status_tag yellow'
+        when 'processing'
+          status_tag 'Processing', class: 'status_tag cyan'
         when 'shipped'
-          status_tag 'Shipped', class: 'status_tag yes'
+          status_tag 'Shipped', class: 'status_tag blue'
         when 'delivered'
-          status_tag 'Delivered', class: 'status_tag blue'
+          status_tag 'Delivered', class: 'status_tag yes'
         when 'cancelled'
           status_tag 'Cancelled', class: 'status_tag no'
         else
@@ -103,10 +105,10 @@ ActiveAdmin.register Order do
 
     column :payment_status do |order|
       case order.payment_status
-      when 'created'
-        status_tag '✅ Created', class: 'status_tag yes'
+      when 'completed'
+        status_tag '✅ Completed', class: 'status_tag yes'
       when 'pending'
-        status_tag '⏳ Pending', class: 'status_tag warning'
+        status_tag '⏳ Pending', class: 'status_tag yellow'
       when 'failed'
         status_tag '❌ Failed', class: 'status_tag no'
       else
@@ -117,11 +119,13 @@ ActiveAdmin.register Order do
     column :order_status do |order|
       case order.order_status
       when 'placed'
-        status_tag 'Placed', class: 'status_tag warning'
+        status_tag 'Placed', class: 'status_tag yellow'
+      when 'processing'
+        status_tag 'Processing', class: 'status_tag cyan'
       when 'shipped'
-        status_tag 'Shipped', class: 'status_tag ok'
+        status_tag 'Shipped', class: 'status_tag blue'
       when 'delivered'
-        status_tag 'Delivered', class: 'status_tag blue'
+        status_tag 'Delivered', class: 'status_tag yes'
       when 'cancelled'
         status_tag 'Cancelled', class: 'status_tag no'
       else
