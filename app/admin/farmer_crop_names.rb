@@ -1,0 +1,60 @@
+ActiveAdmin.register FarmerCropName do
+  menu parent: 'Crop Master Data', priority: 1
+
+  permit_params :name, farmer_crop_type_names_attributes: [:id, :name, :_destroy]
+
+  config.sort_order = 'created_at_desc'
+
+  filter :name
+  filter :created_at
+  filter :updated_at
+
+  form do |f|
+    if f.object.errors[:base].any?
+      div style: 'background-color: #ffe6e6; border: 1px solid #ff4d4d; padding: 10px; margin-bottom: 20px; color: #d8000c; font-weight: bold;' do
+        ul style: 'padding-left: 20px; margin: 0;' do
+          f.object.errors[:base].each do |msg|
+            li "• #{msg}"
+          end
+        end
+      end
+    end
+
+    f.inputs 'Crop Name Details' do
+      f.input :name, placeholder: 'Enter crop name'
+    end
+
+    f.inputs 'Crop Type Names' do
+      f.has_many :farmer_crop_type_names, heading: 'Crop Type Names', new_record: 'Add Type Name', allow_destroy: true do |ct|
+        ct.input :name, placeholder: 'Enter crop type name'
+      end
+    end
+
+    f.actions
+  end
+
+  show do
+    attributes_table do
+      row :name
+      row :created_at
+      row :updated_at
+    end
+
+    panel 'Crop Type Names' do
+      table_for farmer_crop_name.farmer_crop_type_names.order(:created_at) do
+        column('No.') { |ct| farmer_crop_name.farmer_crop_type_names.order(:created_at).index(ct) + 1 }
+        column :name
+        column :created_at
+        column :updated_at
+      end
+    end
+  end
+
+  index do
+    selectable_column
+    column('No.', sortable: :created_at) { |crop| FarmerCropName.order(:created_at).pluck(:id).index(crop.id) + 1 }
+    column :name
+    column('Type Names Count') { |crop| crop.farmer_crop_type_names.count }
+    actions
+  end
+end

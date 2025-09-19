@@ -14,14 +14,14 @@ class AccountsController < ApplicationController
         return render json: { errors: format_activerecord_errors(account.errors) }, status: :unprocessable_entity
       end
 
-      create_or_update_address(account, json_params)
+      sync_farmer_address(account, json_params) if account.is_a?(Farmer)
       return send_otp(phone, 'signup')
     end
 
-    @account = Account.new(json_params)
+    @account = json_params['type'].constantize.new(json_params)
 
     if @account.save
-      create_or_update_address(@account, json_params)
+      sync_farmer_address(@account, json_params) if @account.is_a?(Farmer)
       return send_otp(@account.full_phone_number, 'signup')
     else
       render json: { errors: format_activerecord_errors(@account.errors) }, status: :unprocessable_entity
@@ -59,7 +59,7 @@ class AccountsController < ApplicationController
     end
 
     output.on(:successful_login) do |account, token, refresh_token|
-      render json: { meta: { token: token, refresh_token: refresh_token, id: account.id } }
+      render json: { meta: { token: token, refresh_token: refresh_token, id: account.id, type: account.type } }
     end
 
     output.login_account(account)
@@ -271,7 +271,11 @@ class AccountsController < ApplicationController
     )
   end
 
-  def create_or_update_address(account, params)
+  private
+
+  def sync_farmer_address(account, params)
+    return unless account.is_a?(Farmer)
+
     address_attrs = {
       name: params['full_name'],
       mobile: Phonelib.parse(params['full_phone_number']).sanitized&.last(10),

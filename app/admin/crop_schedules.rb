@@ -1,5 +1,5 @@
 ActiveAdmin.register CropSchedule do
-  menu parent: 'Crop Management', priority: 2
+  menu parent: 'Crop Knowledge Base', priority: 2
 
   permit_params :crop_id, :heading, stages_attributes: [:id, :title, :_destroy, stage_details_attributes: [:id, :product_to_use, :benefits, :_destroy]]
 

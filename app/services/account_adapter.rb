@@ -11,6 +11,11 @@ class AccountAdapter
       return
     end
 
+    if account_params['type'].present? && account.type != account_params['type']
+      broadcast(:account_not_found)
+      return
+    end
+
     if account.authenticate(account_params['password'])
       token, refresh_token = generate_tokens(account.id)
       broadcast(:successful_login, account, token, refresh_token)

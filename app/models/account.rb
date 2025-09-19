@@ -16,6 +16,7 @@ class Account < ApplicationRecord
 	has_many :addresses, dependent: :destroy
 	has_many :orders, dependent: :destroy
 
+	validates :type, presence: true, inclusion: { in: %w[Farmer Trader] }
 	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: true
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
 	validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true

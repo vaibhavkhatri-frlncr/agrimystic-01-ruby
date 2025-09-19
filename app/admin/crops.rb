@@ -1,5 +1,5 @@
 ActiveAdmin.register Crop do
-  menu parent: 'Crop Management', priority: 1
+  menu parent: 'Crop Knowledge Base', priority: 1
 
   permit_params :name, :crop_image
 

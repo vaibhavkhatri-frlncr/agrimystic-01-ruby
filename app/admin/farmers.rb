@@ -1,7 +1,8 @@
-ActiveAdmin.register Account do
-  menu priority: 3, label: 'Account Management'
+ActiveAdmin.register Farmer do
+  menu parent: "User Management", priority: 1
 
-  permit_params :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, :password, :otp_verified, :activated
+  permit_params :full_name, :first_name, :last_name, :full_phone_number,
+                :address, :date_of_birth, :password, :otp_verified, :activated
 
   filter :full_name
   filter :first_name
@@ -42,7 +43,7 @@ ActiveAdmin.register Account do
     f.actions
   end
 
-  show title: 'Account Details' do
+  show title: 'Farmer Details' do
     attributes_table do
       row :full_name
       row :first_name
@@ -61,7 +62,7 @@ ActiveAdmin.register Account do
       row :updated_at
     end
 
-    panel 'Account Addresses' do
+    panel 'Farmer Addresses' do
       if resource.addresses.any?
         table_for resource.addresses.order(created_at: :asc) do
           column('No.') { |address| resource.addresses.order(:created_at).index(address) + 1 }
@@ -71,45 +72,39 @@ ActiveAdmin.register Account do
           column :pincode
           column :state
           column :district
-					column :address_type do |address|
-						case address.address_type
-						when 'home'
-							'🏠 Home'
-						when 'office'
-							'🏢 Office'
-						when 'other'
-							'📦 Other'
-						else
-							address.address_type
-						end
-					end
+          column :address_type do |address|
+            case address.address_type
+            when 'home' then '🏠 Home'
+            when 'office' then '🏢 Office'
+            when 'other' then '📦 Other'
+            else address.address_type
+            end
+          end
           column :default_address
           column :created_at
           column :updated_at
         end
       else
-        div do
-          'No addresses associated with this account.'
-        end
+        div { 'No addresses associated with this farmer.' }
       end
     end
   end
 
-  index title: 'Account' do
+  index title: 'Farmers' do
     selectable_column
 
-    column('No.', sortable: :created_at) do |account|
-      Account.order(:created_at).pluck(:id).index(account.id) + 1
+    column('No.', sortable: :created_at) do |farmer|
+      Farmer.order(:created_at).pluck(:id).index(farmer.id) + 1
     end
 
     column :full_name
     column :full_phone_number
     column :address
-    column :otp_verified do |user|
-      user.otp_verified? ? status_tag('yes') : status_tag('no')
+    column :otp_verified do |farmer|
+      farmer.otp_verified? ? status_tag('yes') : status_tag('no')
     end
-    column :activated do |user|
-      user.activated? ? status_tag('yes') : status_tag('no')
+    column :activated do |farmer|
+      farmer.activated? ? status_tag('yes') : status_tag('no')
     end
     column :date_of_birth
 

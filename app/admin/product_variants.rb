@@ -35,7 +35,6 @@ ActiveAdmin.register ProductVariant do
 
   show do
     attributes_table do
-      row :id
       row :product
       row :size
       row :price

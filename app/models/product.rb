@@ -6,7 +6,7 @@ class Product < ApplicationRecord
   has_many :product_variants, dependent: :destroy
   has_many_attached :images
 
-  accepts_nested_attributes_for :product_variants, allow_destroy: true
+  accepts_nested_attributes_for :product_variants, allow_destroy: true, reject_if: :all_blank
 
   validates :name, :description, :manufacturer, :dosage, :features, presence: true
   validates :code, uniqueness: true, presence: true

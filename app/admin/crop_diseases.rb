@@ -1,5 +1,5 @@
 ActiveAdmin.register CropDisease do
-  menu parent: 'Crop Management', priority: 3
+  menu parent: 'Crop Knowledge Base', priority: 3
 
   permit_params :crop_id, :disease_name, :disease_cause, :solution, :products_recommended, :disease_image
 

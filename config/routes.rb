@@ -38,4 +38,8 @@ Rails.application.routes.draw do
   post 'orders/:id/process_payment', to: 'orders#process_payment'
   get 'order/razorpay_api_key', to: 'orders#razorpay_api_key'
   post 'orders/:id/payment_verification', to: 'orders#payment_verification'
+
+  resources :farmer_crop_names, only: [:index, :show]
+  resources :farmer_crops, only: [:index, :show, :create, :update, :destroy]
+  get 'farmer_crop/current_farmer_crops', to: 'farmer_crops#current_farmer_crops'
 end
