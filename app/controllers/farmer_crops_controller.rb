@@ -36,7 +36,10 @@ class FarmerCropsController < ApplicationController
     farmer_crop = current_user.farmer_crops.build(farmer_crop_params)
 
     if farmer_crop.save
-      render json: { message: "Farmer crop created successfully." }, status: :created
+      render json: {
+        message: "Farmer crop created successfully.",
+        data: FarmerCropSerializer.new(farmer_crop)
+      }, status: :created
     else
       render json: { errors: format_activerecord_errors(farmer_crop.errors) }, status: :unprocessable_entity
     end
@@ -44,7 +47,10 @@ class FarmerCropsController < ApplicationController
 
   def update
     if @farmer_crop.update(farmer_crop_params)
-      render json: { message: "Farmer crop updated successfully." }, status: :ok
+      render json: {
+        message: "Farmer crop updated successfully.",
+        data: FarmerCropSerializer.new(@farmer_crop)
+      }, status: :ok
     else
       render json: { errors: format_activerecord_errors(@farmer_crop.errors) }, status: :unprocessable_entity
     end

@@ -21,6 +21,7 @@ class Account < ApplicationRecord
 	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
 	validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true
 	validates :password, presence: true, if: :password_changed?
+	validates :full_phone_number, uniqueness: { message: 'has already been taken' }
 	validate :valid_profile_image_format, if: -> { profile_image.attached? }
 
 	scope :active, -> { where(activated: true) }
