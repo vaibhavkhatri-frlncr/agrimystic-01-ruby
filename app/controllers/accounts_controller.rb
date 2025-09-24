@@ -2,29 +2,35 @@ class AccountsController < ApplicationController
   before_action :validate_json_web_token, only: [:verify_signup_otp, :verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify, :email_update_otp_send, :email_update_otp_verify]
   before_action :check_account_activated, only: [:verify_otp, :reset_password, :show, :profile_details_update, :phone_update_otp_send, :phone_update_otp_verify, :email_update_otp_send, :email_update_otp_verify]
 
+  ALLOWED_STI = %w[Farmer Trader].freeze
+
   def signup
     json_params = jsonapi_deserialize(params)
     phone = Phonelib.parse(json_params['full_phone_number']).sanitized
-    account = Account.find_by(full_phone_number: phone)
 
-    if account
-      if account.otp_verified?
-        return render json: { errors: [{ account: 'Account already registered.' }] }, status: :unprocessable_entity
-      elsif !account.update(json_params.except('full_phone_number'))
-        return render json: { errors: format_activerecord_errors(account.errors) }, status: :unprocessable_entity
-      end
+    klass = if json_params['type'].present? && ALLOWED_STI.include?(json_params['type'].to_s)
+              json_params['type'].constantize
+            else
+              Account
+            end
 
+    existing_account = klass.find_by(full_phone_number: phone, otp_verified: false)
+    existing_account.destroy if existing_account.present?
+
+    account = klass.new
+    account.assign_attributes(json_params)
+
+    if account.save
       sync_farmer_address(account, json_params) if account.is_a?(Farmer)
-      return send_otp(phone, 'signup')
-    end
 
-    @account = json_params['type'].constantize.new(json_params)
-
-    if @account.save
-      sync_farmer_address(@account, json_params) if @account.is_a?(Farmer)
-      return send_otp(@account.full_phone_number, 'signup')
+      sms_otp = SmsOtp.new(full_phone_number: account.full_phone_number, purpose: 'signup')
+      if sms_otp.save
+        render json: { token: generate_otp_token(sms_otp, 'signup'), message: "OTP sent for signup." }, status: :created
+      else
+        render json: { errors: format_activerecord_errors(sms_otp.errors) }, status: :unprocessable_entity
+      end
     else
-      render json: { errors: format_activerecord_errors(@account.errors) }, status: :unprocessable_entity
+      render json: { errors: format_activerecord_errors(account.errors) }, status: :unprocessable_entity
     end
   end
 
@@ -37,7 +43,7 @@ class AccountsController < ApplicationController
       account.update!(otp_verified: true)
       render json: { message: 'OTP verified successfully.' }, status: :ok
     else
-      render json: { errors: [{ pin: 'Invalid or expired OTP' }] }, status: :unprocessable_entity
+      render json: { errors: [{ pin: 'Invalid or expired OTP.' }] }, status: :unprocessable_entity
     end
   end
 

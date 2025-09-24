@@ -1,6 +1,4 @@
 class CropSchedule < ApplicationRecord
-  self.table_name = :crop_schedules
-
   belongs_to :crop
   has_many :stages, dependent: :destroy
 

@@ -1,6 +1,4 @@
 class FarmerCrop < ApplicationRecord
-  self.table_name = :farmer_crops
-
   belongs_to :farmer, class_name: "Farmer"
   belongs_to :farmer_crop_name
   belongs_to :farmer_crop_type_name

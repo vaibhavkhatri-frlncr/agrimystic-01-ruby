@@ -1,9 +1,8 @@
 class Crop < ApplicationRecord
-  self.table_name = :crops
-
-  has_one_attached :crop_image
   has_one :crop_schedule, dependent: :destroy
   has_many :crop_diseases, dependent: :destroy
+
+  has_one_attached :crop_image
 
   before_validation :titleize_name
 

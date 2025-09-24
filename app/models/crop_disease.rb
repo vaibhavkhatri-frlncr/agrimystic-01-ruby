@@ -1,7 +1,6 @@
 class CropDisease < ApplicationRecord
-  self.table_name = :crop_diseases
-
   belongs_to :crop
+
   has_one_attached :disease_image
 
   validates :disease_name, :disease_cause, :solution, :products_recommended, presence: true

@@ -1,15 +1,29 @@
 ActiveAdmin.register Farmer do
   menu parent: "User Management", priority: 1
 
-  permit_params :full_name, :first_name, :last_name, :full_phone_number,
-                :address, :date_of_birth, :password, :otp_verified, :activated
+  permit_params :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, :password, :activated
+
+  controller do
+    def scoped_collection
+      super.where(otp_verified: true)
+    end
+
+    def update
+      resource.request_source = :admin
+      super
+    end
+
+    def create
+      params[:farmer][:otp_verified] = true
+      super
+    end
+  end
 
   filter :full_name
   filter :first_name
   filter :last_name
   filter :full_phone_number
   filter :address
-  filter :otp_verified
   filter :activated
   filter :date_of_birth
   filter :created_at
@@ -36,7 +50,6 @@ ActiveAdmin.register Farmer do
       f.input :address
       f.input :date_of_birth, as: :date_select, start_year: Date.current.year - 100, end_year: Date.current.year
       f.object.new_record? ? (f.input :password, as: :string) : (f.input :password, as: :string, input_html: { placeholder: '********' })
-      f.input :otp_verified
       f.input :activated
     end
 
@@ -51,13 +64,8 @@ ActiveAdmin.register Farmer do
       row :full_phone_number
       row :email
       row :address
-      row :state
-      row :district
-      row :village
-      row :pincode
-      row :otp_verified
-      row :activated
       row :date_of_birth
+      row :activated
       row :created_at
       row :updated_at
     end
@@ -94,19 +102,16 @@ ActiveAdmin.register Farmer do
     selectable_column
 
     column('No.', sortable: :created_at) do |farmer|
-      Farmer.order(:created_at).pluck(:id).index(farmer.id) + 1
+      Farmer.where(otp_verified: true).order(:created_at).pluck(:id).index(farmer.id) + 1
     end
 
     column :full_name
     column :full_phone_number
     column :address
-    column :otp_verified do |farmer|
-      farmer.otp_verified? ? status_tag('yes') : status_tag('no')
-    end
+    column :date_of_birth
     column :activated do |farmer|
       farmer.activated? ? status_tag('yes') : status_tag('no')
     end
-    column :date_of_birth
 
     actions
   end

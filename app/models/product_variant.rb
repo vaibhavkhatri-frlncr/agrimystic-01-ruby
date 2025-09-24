@@ -1,6 +1,4 @@
 class ProductVariant < ApplicationRecord
-  self.table_name = :product_variants
-
   belongs_to :product
   has_many :cart_product
 

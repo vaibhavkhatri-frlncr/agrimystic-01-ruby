@@ -1,113 +1,148 @@
 class Account < ApplicationRecord
-	self.table_name = :accounts
+  attr_accessor :request_source
 
-	has_secure_password
-	before_validation :titleize_account_fields
-	before_validation :parse_full_phone_number
-	before_validation :valid_phone_number
-	before_validation :valid_password
-	before_validation :valid_first_and_last_name
-	before_create :generate_api_key
+  ALLOWED_TYPES = %w[Farmer Trader].freeze
+  NAME_REGEX    = /\A[\p{L}\s'-]+\z/u
 
-	has_one_attached :profile_image
-	has_one :cart, dependent: :destroy
-	has_many :cart_products, through: :cart
-	has_many :products, through: :cart_products
-	has_many :addresses, dependent: :destroy
-	has_many :orders, dependent: :destroy
+  FIRST_MIN = 2
+  FIRST_MAX = 50
+  LAST_MIN  = 2
+  LAST_MAX  = 50
+  FULL_MIN  = 4
+  FULL_MAX  = 60
 
-	validates :type, presence: true, inclusion: { in: %w[Farmer Trader] }
-	validates :full_name, :first_name, :last_name, :full_phone_number, :address, :date_of_birth, presence: true
-	validates :gender, inclusion: { in: %w(Male Female Trans-gender) }, allow_blank: true
-	validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true
-	validates :password, presence: true, if: :password_changed?
-	validates :full_phone_number, uniqueness: { message: 'has already been taken' }
-	validate :valid_profile_image_format, if: -> { profile_image.attached? }
+  has_secure_password
 
-	scope :active, -> { where(activated: true) }
+  before_validation :titleize_account_fields
+  before_validation :parse_full_phone_number
+  before_validation :valid_phone_number
+  before_validation :valid_password
+  before_create     :generate_api_key
 
-	private
+  has_one_attached :profile_image
 
-	def valid_profile_image_format
-		allowed_types = %w[
-			image/png
-			image/jpg
-			image/jpeg
-			image/gif
-			image/bmp
-			image/webp
-			image/tiff
-			image/x-icon
-			image/vnd.microsoft.icon
-			image/heif
-			image/heic
-			image/svg+xml
-		]
+  validates :full_phone_number, :address, :date_of_birth, presence: true
+  validates :gender,
+            inclusion: { in: %w[Male Female Trans-gender] },
+            allow_blank: true
+  validates :pincode,
+            format: { with: /\A[1-9][0-9]{5}\z/,
+                      message: 'must be a valid 6-digit Indian PIN code' },
+            allow_blank: true
 
-		unless profile_image.content_type.in?(allowed_types)
-			errors.add(:profile_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
-		end
-	end
+  validate :valid_profile_image_format, if: -> { profile_image.attached? }
+  validate :unique_verified_phone_number
+  validate :validate_account_type
+  validate :single_error_names
 
-	def password_changed?
-		password.present? || new_record?
-	end
+  scope :active, -> { where(activated: true) }
 
-	def titleize_account_fields
-    self.first_name = titleize_string(first_name)
-    self.last_name = titleize_string(last_name)
-    self.full_name = titleize_string(full_name)
-    self.address = titleize_string(address)
-    self.state = titleize_string(state)
-    self.district = titleize_string(district)
-    self.village = titleize_string(village)
-    self.gender = titleize_string(gender)
+  private
+
+  def single_error_names
+    validations = {
+      first_name: { min: FIRST_MIN, max: FIRST_MAX },
+      last_name:  { min: LAST_MIN,  max: LAST_MAX },
+      full_name:  { min: FULL_MIN,  max: FULL_MAX }
+    }
+
+    validations.each do |attr, opts|
+      value = send(attr).to_s.strip
+
+      if value.blank?
+        errors.add(attr, "can't be blank")
+        next
+      end
+
+      if value.length < opts[:min]
+        errors.add(attr, "is too short (minimum is #{opts[:min]} characters)")
+        next
+      end
+
+      if value.length > opts[:max]
+        errors.add(attr, "is too long (maximum is #{opts[:max]} characters)")
+        next
+      end
+
+      unless value.match?(NAME_REGEX)
+        errors.add(attr, 'only allows letters')
+        next
+      end
+    end
   end
 
-	def titleize_string(str)
-		str.to_s.titleize if str.present?
-	end
-
-	def parse_full_phone_number
-		phone = Phonelib.parse(full_phone_number)
-		self.full_phone_number = phone.sanitized
-		self.country_code = phone.country_code
-		self.phone_number = phone.raw_national
-	end
-
-	def valid_phone_number
-		return if full_phone_number.blank?
-
-		unless Phonelib.valid?(full_phone_number)
-			errors.add(:full_phone_number, 'invalid or unrecognized phone number')
-		end
-	end
-
-	def valid_password
-		return if password.blank?
-
-		unless password.match?(/^(?=.*\d)(?=.*[a-z]).{8,}$/)
-			errors.add(:password, 'must be at least 8 characters long and include at least one lowercase letter and one digit')
-		end
-	end
-
-	def valid_first_and_last_name
-		return if first_name.blank? || last_name.blank?
-
-    unless first_name.match?(/\A[a-zA-Z]+\z/)
-      errors.add(:first_name, 'first name can only contain letters')
+  def validate_account_type
+    if type.blank?
+      errors.add(:type, "can't be blank")
+    elsif !ALLOWED_TYPES.include?(type)
+      errors.add(:type, 'must be Farmer or Trader')
     end
+  end
 
-		unless last_name.match?(/\A[a-zA-Z]+\z/)
-			errors.add(:last_name, 'last name can only contain letters')
-		end
-	end
+  def unique_verified_phone_number
+    return if full_phone_number.blank?
 
-	def generate_api_key
-		loop do
-			@token = SecureRandom.base64.tr("+/=", "Qrt")
-			break @token unless Account.exists?(unique_auth_id: @token)
-		end
-		self.unique_auth_id = @token
-	end
+    query = Account.where(full_phone_number: full_phone_number, otp_verified: true)
+    query = query.where.not(id: id) if request_source == :admin
+
+    if query.exists?
+      errors.add(:full_phone_number, 'has already been taken')
+    end
+  end
+
+  def valid_profile_image_format
+    allowed_types = %w[image/png image/jpg image/jpeg]
+
+    unless profile_image.content_type.in?(allowed_types)
+      errors.add(:profile_image, 'must be a valid image format (PNG, JPG, JPEG)')
+    end
+  end
+
+  def titleize_account_fields
+    self.first_name = titleize_string(first_name)
+    self.last_name  = titleize_string(last_name)
+    self.full_name  = titleize_string(full_name)
+    self.address    = titleize_string(address)
+    self.state      = titleize_string(state)
+    self.district   = titleize_string(district)
+    self.village    = titleize_string(village)
+    self.gender     = titleize_string(gender)
+  end
+
+  def titleize_string(str)
+    str.to_s.titleize if str.present?
+  end
+
+  def parse_full_phone_number
+    phone              = Phonelib.parse(full_phone_number)
+    self.full_phone_number = phone.sanitized
+    self.country_code      = phone.country_code
+    self.phone_number      = phone.raw_national
+  end
+
+  def valid_phone_number
+    return if full_phone_number.blank?
+
+    unless Phonelib.valid?(full_phone_number)
+      errors.add(:full_phone_number, 'invalid or unrecognized phone number')
+    end
+  end
+
+  def valid_password
+    return if password.blank?
+
+    unless password.match?(/\A(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=~`\[\]{}|\\:;"'<>,.?]).{8,}\z/)
+      errors.add(:password,
+                 'must be at least 8 characters long and include at least one uppercase letter, ' \
+                 'one lowercase letter, one digit, and one special character')
+    end
+  end
+
+  def generate_api_key
+    loop do
+      @token = SecureRandom.base64.tr('+/=', 'Qrt')
+      break @token unless Account.exists?(unique_auth_id: @token)
+    end
+    self.unique_auth_id = @token
+  end
 end

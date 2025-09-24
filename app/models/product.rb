@@ -1,6 +1,4 @@
 class Product < ApplicationRecord
-  self.table_name = :products
-
   belongs_to :category
   has_one_attached :product_image
   has_many :product_variants, dependent: :destroy

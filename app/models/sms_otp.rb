@@ -1,12 +1,10 @@
 class SmsOtp < ApplicationRecord
-	self.table_name = :sms_otps
-
 	include Wisper::Publisher
 
 	before_validation :parse_full_phone_number
 
 	before_create :generate_pin_and_valid_date
-	# after_create :send_pin_via_sms
+	after_create :send_pin_via_sms
 
 	validate :valid_phone_number
 	validates :full_phone_number, presence: true
@@ -18,8 +16,12 @@ class SmsOtp < ApplicationRecord
 
 	def send_pin_via_sms
 		message = generate_otp_message
-		txt = SendSms.new("+#{full_phone_number}", message)
-		txt.call
+		begin
+			txt = SendSms.new("+#{full_phone_number}", message)
+			txt.call
+		rescue => e
+			Rails.logger.error("Failed to send OTP SMS to #{full_phone_number}: #{e.message}")
+		end
 	end
 
 	private

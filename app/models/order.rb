@@ -1,7 +1,5 @@
 class Order < ApplicationRecord
-  self.table_name = :orders
-
-  belongs_to :account
+  belongs_to :farmer, class_name: "Farmer"
   belongs_to :address
   has_many :order_products, dependent: :destroy
 
