@@ -43,13 +43,17 @@ ActiveAdmin.register Farmer do
     end
 
     f.inputs do
-      f.input :full_name
-      f.input :first_name
-      f.input :last_name
+      f.input :full_name, required: true
+      f.input :first_name, required: true
+      f.input :last_name, required: true
       f.input :full_phone_number
       f.input :address
       f.input :date_of_birth, as: :date_select, start_year: Date.current.year - 100, end_year: Date.current.year
-      f.object.new_record? ? (f.input :password, as: :string) : (f.input :password, as: :string, input_html: { placeholder: '********' })
+      if f.object.new_record?
+        f.input :password, as: :string, required: true
+      else
+        f.input :password, as: :string, input_html: { placeholder: '********' }
+      end
       f.input :activated
     end
 

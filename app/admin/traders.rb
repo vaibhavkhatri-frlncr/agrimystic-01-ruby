@@ -32,16 +32,31 @@ ActiveAdmin.register Trader do
   config.sort_order = 'created_at_desc'
 
   form do |f|
+    if f.object.errors[:base].any?
+      div style: 'background-color: #ffe6e6; border: 1px solid #ff4d4d; padding: 10px; margin-bottom: 20px; color: #d8000c; font-weight: bold;' do
+        ul style: 'padding-left: 20px; margin: 0;' do
+          f.object.errors[:base].each do |msg|
+            li "• #{msg}"
+          end
+        end
+      end
+    end
+
     f.inputs do
-      f.input :full_name
-      f.input :first_name
-      f.input :last_name
+      f.input :full_name, required: true
+      f.input :first_name, required: true
+      f.input :last_name, required: true
       f.input :full_phone_number
       f.input :address
       f.input :date_of_birth, as: :date_select, start_year: Date.current.year - 100, end_year: Date.current.year
-      f.object.new_record? ? (f.input :password, as: :string) : (f.input :password, as: :string, input_html: { placeholder: '********' })
+      if f.object.new_record?
+        f.input :password, as: :string, required: true
+      else
+        f.input :password, as: :string, input_html: { placeholder: '********' }
+      end
       f.input :activated
     end
+
     f.actions
   end
 

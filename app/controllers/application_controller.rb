@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
 		@current_user ||= Account.find_by(id: @token.id)
 
 		unless @current_user
-			render json: { errors: [{ account: 'Account not found' }] }, status: :not_found and return
+			render json: { errors: [{ account: 'Account not found.' }] }, status: :not_found and return
 		end
 
 		@current_user
@@ -29,7 +29,7 @@ class ApplicationController < ActionController::Base
 		return unless current_user
 
 		unless current_user.activated
-			render json: { errors: [{ account: 'Your account has been deactivated by the admin' }] }, status: :forbidden
+			render json: { errors: [{ account: 'Your account has been deactivated by the admin.' }] }, status: :forbidden
 		end
 	end
 end

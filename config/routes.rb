@@ -4,18 +4,22 @@ Rails.application.routes.draw do
 
   root to: redirect('/admin')
 
-  post 'account/signup', to: 'accounts#signup'
-  post 'account/verify_signup_otp', to: 'accounts#verify_signup_otp'
-  post 'account/login', to: 'accounts#login'
-  post 'account/send_otp', to: 'accounts#send_otp'
-  post 'account/verify_otp', to: 'accounts#verify_otp'
-  patch 'account/reset_password', to: 'accounts#reset_password'
-  get 'account/details', to: 'accounts#show'
-  put 'account/details_update', to: 'accounts#profile_details_update'
-  post 'account/phone_update_otp_send', to: 'accounts#phone_update_otp_send'
-  put 'account/phone_update_otp_verify', to: 'accounts#phone_update_otp_verify'
-  post 'account/email_update_otp_send', to: 'accounts#email_update_otp_send'
-  put 'account/email_update_otp_verify', to: 'accounts#email_update_otp_verify'
+  resources :accounts, only: [] do
+    collection do
+      post 'signup'
+      post 'verify_signup_otp'
+      post 'login'
+      post 'send_forgot_password_otp'
+      post 'verify_forgot_password_otp'
+      patch 'reset_password'
+      get 'details'
+      put 'details_update'
+      post 'send_phone_update_otp'
+      put 'verify_phone_update_otp'
+      post 'send_email_update_otp'
+      put 'verify_email_update_otp'
+    end
+  end
 
   resources :products, only: [:index, :show]
   get 'product/search', to: 'products#search'

@@ -39,6 +39,14 @@ class Account < ApplicationRecord
 
   private
 
+  def validate_account_type
+    if type.blank?
+      errors.add(:type, "can't be blank")
+    elsif !ALLOWED_TYPES.include?(type)
+      errors.add(:type, 'must be Farmer or Trader')
+    end
+  end
+
   def single_error_names
     validations = {
       first_name: { min: FIRST_MIN, max: FIRST_MAX },
@@ -68,14 +76,6 @@ class Account < ApplicationRecord
         errors.add(attr, 'only allows letters')
         next
       end
-    end
-  end
-
-  def validate_account_type
-    if type.blank?
-      errors.add(:type, "can't be blank")
-    elsif !ALLOWED_TYPES.include?(type)
-      errors.add(:type, 'must be Farmer or Trader')
     end
   end
 
