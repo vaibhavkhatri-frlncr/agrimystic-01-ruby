@@ -18,10 +18,10 @@ module JsonWebTokenValidation
 	def handle_exception(exception)
 		case exception
 		when JWT::ExpiredSignature
-			return render json: { errors: [token: 'Token has Expired'] },
+			return render json: { errors: [token: 'Token has expired.'] },
 				status: :unauthorized
 		when JWT::DecodeError
-			return render json: { errors: [token: 'Invalid token'] },
+			return render json: { errors: [token: 'Invalid token.'] },
 				status: :bad_request
 		end
 	end

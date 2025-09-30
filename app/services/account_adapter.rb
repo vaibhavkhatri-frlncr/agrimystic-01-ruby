@@ -3,16 +3,15 @@ class AccountAdapter
 
   def login_account(account_params)
     phone = Phonelib.parse(account_params['full_phone_number']).sanitized
-
-    account = Account.find_by(full_phone_number: phone, otp_verified: true, activated: true)
+    account = Account.find_by(full_phone_number: phone, otp_verified: true, type: account_params['type'])
 
     unless account.present?
       broadcast(:account_not_found)
       return
     end
 
-    if account_params['type'].present? && account.type != account_params['type']
-      broadcast(:account_not_found)
+    unless account.activated?
+      broadcast(:account_deactivated)
       return
     end
 
@@ -23,6 +22,8 @@ class AccountAdapter
       broadcast(:failed_login)
     end
   end
+
+  private
 
   def generate_tokens(account_id)
     [
