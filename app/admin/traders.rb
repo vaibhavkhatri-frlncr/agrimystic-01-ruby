@@ -20,8 +20,6 @@ ActiveAdmin.register Trader do
   end
 
   filter :full_name
-  filter :first_name
-  filter :last_name
   filter :full_phone_number
   filter :address
   filter :date_of_birth

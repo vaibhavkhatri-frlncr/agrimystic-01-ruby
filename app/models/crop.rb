@@ -6,7 +6,8 @@ class Crop < ApplicationRecord
 
   before_validation :titleize_name
 
-  validates :name, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 50 }
+  validates :name, presence: true, uniqueness: { case_sensitive: false }
+  validate :validate_crop_name
   validate :crop_image_presence
   validate :crop_image_format
 
@@ -19,27 +20,33 @@ class Crop < ApplicationRecord
   def crop_image_format
     return unless crop_image.attached?
 
-    allowed_types = %w[
-      image/png
-      image/jpg
-      image/jpeg
-      image/gif
-      image/bmp
-      image/webp
-      image/tiff
-      image/x-icon
-      image/vnd.microsoft.icon
-      image/heif
-      image/heic
-      image/svg+xml
-    ]
-
+    allowed_types = %w[image/png image/jpg image/jpeg]
     unless crop_image.content_type.in?(allowed_types)
-      errors.add(:crop_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+      errors.add(:crop_image, 'must be a valid image format (PNG, JPG, JPEG)')
     end
   end
 
   def titleize_name
     self.name = name.to_s.titleize if name.present?
+  end
+
+  def validate_crop_name
+    value = name.to_s.strip
+
+    return if value.blank?
+
+    if value.length < 2
+      errors.add(:name, "is too short (minimum is 2 characters)")
+      return
+    end
+
+    if value.length > 50
+      errors.add(:name, "is too long (maximum is 50 characters)")
+      return
+    end
+
+    unless value.match?(/\A[a-zA-Z\s]+\z/)
+      errors.add(:name, 'only allows letters and spaces')
+    end
   end
 end

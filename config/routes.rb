@@ -21,7 +21,14 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :helpline_numbers, only: [:index]
+
+  resources :crops, only: [:index, :show]
+
+  resources :addresses, only: [:index, :show, :create, :update, :destroy]
+
   resources :products, only: [:index, :show]
+
   get 'product/search', to: 'products#search'
 
   resources :categories, only: [:index]
@@ -30,13 +37,10 @@ Rails.application.routes.draw do
   post 'cart/remove_from_cart', to: 'carts#remove_from_cart'
   get 'cart/get_cart_products', to: 'carts#get_cart_products'
 
-  resources :crops, only: [:index, :show]
   resources :crop_schedules, only: [:show]
   resources :crop_diseases, only: [:index, :show]
-  resources :addresses, only: [:index, :show, :create, :update, :destroy]
   get 'address/google_maps_api_key', to: 'addresses#google_maps_api_key'
 
-  resources :helpline_numbers, only: [:index]
   resources :orders, only: [:index, :create]
   put 'orders/:id/cancel', to: 'orders#cancel'
   post 'orders/:id/process_payment', to: 'orders#process_payment'

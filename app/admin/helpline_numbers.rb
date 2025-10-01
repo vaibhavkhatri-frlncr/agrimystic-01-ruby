@@ -3,7 +3,7 @@ ActiveAdmin.register HelplineNumber do
 
   permit_params :phone_number, :region
 
-  filter :phone_number
+  filter :phone_number, as: :string, label: "Phone Number"
   filter :region
   filter :created_at
   filter :updated_at

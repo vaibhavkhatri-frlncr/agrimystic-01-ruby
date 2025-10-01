@@ -1,5 +1,15 @@
 class AccountsController < ApplicationController
-  before_action [:validate_json_web_token, :check_account_activated], only: [:reset_password, :details, :details_update, :send_phone_update_otp, :verify_phone_update_otp, :send_email_update_otp, :verify_email_update_otp]
+  before_action :validate_json_web_token, only: [
+    :reset_password, :details, :details_update,
+    :send_phone_update_otp, :verify_phone_update_otp,
+    :send_email_update_otp, :verify_email_update_otp
+  ]
+
+  before_action :check_account_activated, only: [
+    :reset_password, :details, :details_update,
+    :send_phone_update_otp, :verify_phone_update_otp,
+    :send_email_update_otp, :verify_email_update_otp
+  ]
 
   ALLOWED_STI = %w[Farmer Trader].freeze
 

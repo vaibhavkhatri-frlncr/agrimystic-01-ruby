@@ -22,7 +22,7 @@ ActiveAdmin.register Crop do
 
     f.inputs do
       f.input :name
-      f.input :crop_image, as: :file, hint: f.object.crop_image.attached? ? image_tag(url_for(f.object.crop_image), size: '100x100') : 'Upload crop image'
+      f.input :crop_image, as: :file, hint: 'Upload crop image'
     end
     f.actions
   end

@@ -20,12 +20,10 @@ ActiveAdmin.register Farmer do
   end
 
   filter :full_name
-  filter :first_name
-  filter :last_name
   filter :full_phone_number
   filter :address
-  filter :activated
   filter :date_of_birth
+  filter :activated
   filter :created_at
   filter :updated_at
 

@@ -3,12 +3,12 @@ class HelplineNumbersController < ApplicationController
   before_action :check_account_activated
 
   def index
-    helplines = HelplineNumber.all
+    helpline_numbers = HelplineNumber.all
 
-    if helplines.present?
-      render json: HelplineNumberSerializer.new(helplines), status: :ok
+    if helpline_numbers.present?
+      render json: HelplineNumberSerializer.new(helpline_numbers), status: :ok
     else
-      render json: { errors: { message: 'No helpline numbers found.' } }, status: :not_found
+      render json: { errors: [{ message: 'No helpline numbers found.' }] }, status: :not_found
     end
   end
 end

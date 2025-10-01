@@ -2,16 +2,10 @@ class Account < ApplicationRecord
   attr_accessor :request_source
 
   ALLOWED_TYPES = %w[Farmer Trader].freeze
-  NAME_REGEX    = /\A[\p{L}\s'-]+\z/u
-
-  FIRST_MIN = 2
-  FIRST_MAX = 50
-  LAST_MIN  = 2
-  LAST_MAX  = 50
-  FULL_MIN  = 4
-  FULL_MAX  = 60
 
   has_secure_password
+
+  has_one_attached :profile_image
 
   before_validation :titleize_account_fields
   before_validation :parse_full_phone_number
@@ -19,9 +13,7 @@ class Account < ApplicationRecord
   before_validation :valid_password
   before_create     :generate_api_key
 
-  has_one_attached :profile_image
-
-  validates :full_phone_number, :address, :date_of_birth, presence: true
+  validates :full_phone_number, :date_of_birth, :address, presence: true
   validates :gender,
             inclusion: { in: %w[Male Female Trans-gender] },
             allow_blank: true
@@ -29,8 +21,7 @@ class Account < ApplicationRecord
             format: { with: /\A[1-9][0-9]{5}\z/,
                       message: 'must be a valid 6-digit Indian PIN code' },
             allow_blank: true
-
-  validate :valid_profile_image_format, if: -> { profile_image.attached? }
+  validate :profile_image_format
   validate :unique_verified_phone_number
   validate :validate_account_type
   validate :single_error_names
@@ -49,9 +40,9 @@ class Account < ApplicationRecord
 
   def single_error_names
     validations = {
-      first_name: { min: FIRST_MIN, max: FIRST_MAX },
-      last_name:  { min: LAST_MIN,  max: LAST_MAX },
-      full_name:  { min: FULL_MIN,  max: FULL_MAX }
+      first_name: { min: 2, max: 50 },
+      last_name:  { min: 2,  max: 50 },
+      full_name:  { min: 4,  max: 60 }
     }
 
     validations.each do |attr, opts|
@@ -72,8 +63,8 @@ class Account < ApplicationRecord
         next
       end
 
-      unless value.match?(NAME_REGEX)
-        errors.add(attr, 'only allows letters')
+      unless value.match?(/\A[\p{L}\s'-]+\z/u)
+        errors.add(attr, 'only allows letters and spaces')
         next
       end
     end
@@ -90,7 +81,9 @@ class Account < ApplicationRecord
     end
   end
 
-  def valid_profile_image_format
+  def profile_image_format
+    return unless profile_image.attached?
+
     allowed_types = %w[image/png image/jpg image/jpeg]
 
     unless profile_image.content_type.in?(allowed_types)
