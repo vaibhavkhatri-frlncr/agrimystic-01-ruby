@@ -11,8 +11,6 @@ ActiveAdmin.register Product do
   filter :name
   filter :code
   filter :manufacturer
-  filter :dosage
-  filter :features
   filter :total_price, label: 'Total Inventory Value'
   filter :created_at
   filter :updated_at
@@ -30,26 +28,14 @@ ActiveAdmin.register Product do
 
     f.inputs 'Product Details' do
       f.input :category, include_blank: 'select category'
-      f.input :product_image, as: :file, hint: (
-        if f.object.persisted? && f.object.product_image.attached?
-          image_tag(url_for(f.object.product_image), size: '100x100')
-        else
-          'Upload product image'
-        end
-      )
+      f.input :product_image, as: :file, required: true, hint: 'Upload product image'
       f.input :name
       f.input :code
       f.input :manufacturer
       f.input :dosage
       f.input :features
       f.input :description, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
-      f.input :images, as: :file, input_html: { multiple: true }, hint: (
-        if f.object.persisted? && f.object.images.attached?
-          f.object.images.map { |img| image_tag(url_for(img), size: '100x100', style: 'margin-right: 10px;') }.join.html_safe
-        else
-          'Upload product images'
-        end
-      )
+      f.input :images, as: :file, input_html: { multiple: true }, hint: 'Upload product images'
     end
 
     f.inputs 'Product Variants' do

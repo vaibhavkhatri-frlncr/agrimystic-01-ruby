@@ -22,10 +22,8 @@ class ProductSerializer < BaseSerializer
       []
     end
   end
-
-  attribute :product_variants do |product|
-    product.product_variants
-  end
-
+  
   attributes :created_at, :updated_at
+  
+  attribute :product_variants
 end

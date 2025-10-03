@@ -1,6 +1,8 @@
 ActiveAdmin.register FarmerCrop do
   menu parent: 'Crop Master Data', priority: 3
 
+  actions :all, except: [:new, :create]
+
   permit_params :farmer_crop_name_id, :farmer_crop_type_name_id, :variety, :description,
                 :moisture_content, :quantity, :price, :contact_number,
                 farmer_crop_images: []
@@ -16,6 +18,7 @@ ActiveAdmin.register FarmerCrop do
   filter :quantity
   filter :price
   filter :contact_number
+  filter :contact_number, as: :string, label: "Contact Number"
   filter :farmer_first_name, as: :string
   filter :farmer_last_name, as: :string
   filter :created_at
@@ -33,21 +36,15 @@ ActiveAdmin.register FarmerCrop do
     end
 
     f.inputs 'Farmer Crop Details' do
-      f.input :farmer_crop_name, include_blank: 'Select Crop Name'
-      f.input :farmer_crop_type_name, include_blank: 'Select Crop Type'
-      f.input :variety, placeholder: 'Enter variety (optional)'
-      f.input :description, placeholder: 'Enter description'
-      f.input :moisture_content, placeholder: 'Enter moisture content'
-      f.input :quantity, placeholder: 'Enter quantity'
-      f.input :price, placeholder: 'Enter price'
-      f.input :contact_number, placeholder: 'Enter contact number'
-      f.input :farmer_crop_images, as: :file, input_html: { multiple: true }, hint: (
-        if f.object.persisted? && f.object.farmer_crop_images.attached?
-          f.object.farmer_crop_images.map { |img| image_tag(url_for(img), size: '100x100', style: 'margin-right: 10px;') }.join.html_safe
-        else
-          'Upload crop images'
-        end
-      )
+      f.input :farmer_crop_name, label: "Name", include_blank: 'Select name'
+      f.input :farmer_crop_type_name, label: "Type", include_blank: 'Select type'
+      f.input :variety
+      f.input :description, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
+      f.input :moisture_content
+      f.input :quantity
+      f.input :price
+      f.input :contact_number
+      f.input :farmer_crop_images, as: :file, required: true, input_html: { multiple: true }, hint: 'Upload crop images'
     end
 
     f.actions

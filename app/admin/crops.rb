@@ -22,7 +22,7 @@ ActiveAdmin.register Crop do
 
     f.inputs do
       f.input :name
-      f.input :crop_image, as: :file, hint: 'Upload crop image'
+      f.input :crop_image, as: :file, required: true, hint: 'Upload crop image'
     end
     f.actions
   end

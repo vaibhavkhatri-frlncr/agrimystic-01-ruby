@@ -3,19 +3,20 @@ class CropDisease < ApplicationRecord
 
   has_one_attached :disease_image
 
-  validates :disease_name, :disease_cause, :solution, :products_recommended, presence: true
+  before_validation :format_fields
+  
+  validates :name, :cause, :solution, :products_recommended, presence: true
+  validate :validate_disease_name
   validate :disease_image_presence
   validate :disease_image_format
-  validate :unique_disease_name_for_crop
-
-  before_validation :format_fields
+  validate :unique_name_for_crop
 
   private
 
   def format_fields
-    self.disease_name = titleize_string(disease_name)
+    self.name = titleize_string(name)
     self.products_recommended = titleize_string(products_recommended)
-    self.disease_cause = capitalize_string(disease_cause)
+    self.cause = capitalize_string(cause)
     self.solution = capitalize_string(solution)
   end
 
@@ -34,32 +35,42 @@ class CropDisease < ApplicationRecord
   def disease_image_format
     return unless disease_image.attached?
 
-    allowed_types = %w[
-      image/png
-      image/jpg
-      image/jpeg
-      image/gif
-      image/bmp
-      image/webp
-      image/tiff
-      image/x-icon
-      image/vnd.microsoft.icon
-      image/heif
-      image/heic
-      image/svg+xml
-    ]
-
+    allowed_types = %w[image/png image/jpg image/jpeg]
     unless disease_image.content_type.in?(allowed_types)
-      errors.add(:disease_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+      errors.add(:disease_image, 'must be a valid image format (PNG, JPG, JPEG)')
     end
   end
 
-  def unique_disease_name_for_crop
+  def unique_name_for_crop
+    value = name.to_s.strip
+
+    return if value.blank?
+
     if CropDisease.where(crop_id: crop_id)
-                  .where('LOWER(disease_name) = ?', disease_name.downcase)
+                  .where('LOWER(name) = ?', value.downcase)
                   .where.not(id: id)
                   .exists?
-      errors.add(:disease_name, 'this crop already has a disease entry with the same name')
+      errors.add(:name, 'this crop already has a disease entry with the same name')
+    end
+  end
+
+  def validate_disease_name
+    value = name.to_s.strip
+
+    return if value.blank?
+
+    if value.length < 2
+      errors.add(:name, "is too short (minimum is 2 characters)")
+      return
+    end
+
+    if value.length > 50
+      errors.add(:name, "is too long (maximum is 50 characters)")
+      return
+    end
+
+    unless value.match?(/\A[a-zA-Z\s]+\z/)
+      errors.add(:name, 'only allows letters and spaces')
     end
   end
 end

@@ -25,21 +25,27 @@ Rails.application.routes.draw do
 
   resources :crops, only: [:index, :show]
 
-  resources :addresses, only: [:index, :show, :create, :update, :destroy]
+  resources :crop_schedules, only: [:show]
+
+  resources :crop_diseases, only: [:index, :show]
+
+  resources :categories, only: [:index]
 
   resources :products, only: [:index, :show]
 
-  get 'product/search', to: 'products#search'
+  resources :addresses, only: [:index, :show, :create, :update, :destroy] do
+    collection do
+      get 'google_maps_api_key', to: 'addresses#google_maps_api_key'
+    end
+  end
 
-  resources :categories, only: [:index]
+  resources :farmer_crop_names, only: [:index, :show]
+  resources :farmer_crops, only: [:index, :show, :create, :update, :destroy]
+  get 'farmer_crop/current_farmer_crops', to: 'farmer_crops#current_farmer_crops'
 
   post 'cart/add_to_cart', to: 'carts#add_to_cart'
   post 'cart/remove_from_cart', to: 'carts#remove_from_cart'
   get 'cart/get_cart_products', to: 'carts#get_cart_products'
-
-  resources :crop_schedules, only: [:show]
-  resources :crop_diseases, only: [:index, :show]
-  get 'address/google_maps_api_key', to: 'addresses#google_maps_api_key'
 
   resources :orders, only: [:index, :create]
   put 'orders/:id/cancel', to: 'orders#cancel'
@@ -47,7 +53,4 @@ Rails.application.routes.draw do
   get 'order/razorpay_api_key', to: 'orders#razorpay_api_key'
   post 'orders/:id/payment_verification', to: 'orders#payment_verification'
 
-  resources :farmer_crop_names, only: [:index, :show]
-  resources :farmer_crops, only: [:index, :show, :create, :update, :destroy]
-  get 'farmer_crop/current_farmer_crops', to: 'farmer_crops#current_farmer_crops'
 end

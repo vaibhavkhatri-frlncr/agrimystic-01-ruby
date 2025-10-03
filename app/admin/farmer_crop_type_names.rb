@@ -22,8 +22,8 @@ ActiveAdmin.register FarmerCropTypeName do
     end
 
     f.inputs 'Crop Type Name Details' do
-      f.input :farmer_crop_name, include_blank: 'Select crop'
-      f.input :name, placeholder: 'Enter crop type name'
+      f.input :farmer_crop_name, include_blank: 'select crop'
+      f.input :name
     end
 
     f.actions

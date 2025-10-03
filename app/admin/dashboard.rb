@@ -110,7 +110,7 @@ ActiveAdmin.register_page "Dashboard" do
             if crop.crop_diseases.any?
               ul do
                 crop.crop_diseases.order(created_at: :asc).each_with_index.map do |disease, index|
-                  li "#{index + 1}. #{disease.disease_name}"
+                  li "#{index + 1}. #{disease.name}"
                 end
               end
             else

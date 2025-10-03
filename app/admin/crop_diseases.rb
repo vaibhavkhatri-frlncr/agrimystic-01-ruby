@@ -1,10 +1,10 @@
 ActiveAdmin.register CropDisease do
   menu parent: 'Crop Knowledge Base', priority: 3
 
-  permit_params :crop_id, :disease_name, :disease_cause, :solution, :products_recommended, :disease_image
+  permit_params :crop_id, :name, :cause, :solution, :products_recommended, :disease_image
 
   filter :crop
-  filter :disease_name
+  filter :name
   filter :created_at
   filter :updated_at
 
@@ -23,11 +23,11 @@ ActiveAdmin.register CropDisease do
 
     f.inputs do
       f.input :crop, include_blank: 'select crop'
-      f.input :disease_name
-      f.input :disease_cause, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
+      f.input :name
+      f.input :cause, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :solution, as: :text, input_html: { style: 'width: 50%; height: 100px; resize: vertical;' }
       f.input :products_recommended
-      f.input :disease_image, as: :file, hint: f.object.disease_image.attached? ? image_tag(url_for(f.object.disease_image), size: '100x100') : 'Upload disease image'
+      f.input :disease_image, as: :file, required: true, hint: 'Upload disease image'
     end
 
     f.actions
@@ -36,8 +36,8 @@ ActiveAdmin.register CropDisease do
   show do
     attributes_table do
       row :crop
-      row :disease_name
-      row :disease_cause
+      row :name
+      row :cause
       row :solution
       row :products_recommended
       row :disease_image do |crop_disease|
@@ -56,7 +56,7 @@ ActiveAdmin.register CropDisease do
     end
 
     column :crop
-    column :disease_name
+    column :name
     column :disease_image do |crop_disease|
       crop_disease.disease_image.attached? ? (image_tag url_for(crop_disease.disease_image), size: '50x50') : 'No image attached'
     end

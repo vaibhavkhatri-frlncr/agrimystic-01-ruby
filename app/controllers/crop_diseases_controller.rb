@@ -5,12 +5,12 @@ class CropDiseasesController < ApplicationController
   before_action :load_crop_disease, only: [:show]
 
   def index
-    crop_diseases = @crop.crop_diseases
+    crop_diseases = @crop.crop_diseases.order(created_at: :desc)
 
     if crop_diseases.present?
       render json: CropDiseaseSerializer.new(crop_diseases), status: :ok
     else
-      render json: { errors: [{ message: "Crop diseases for crop id #{params[:id]} doesn't exist." }] }, status: :not_found
+      render json: { errors: [{ message: "Crop diseases for crop id #{params[:id]} don't exist." }] }, status: :not_found
     end
   end
 
@@ -23,10 +23,10 @@ class CropDiseasesController < ApplicationController
   private
 
   def load_crop
-    @crop = Crop.find_by(id: params[:id])
+    @crop = Crop.find_by(id: params[:crop_id])
 
     if @crop.nil?
-      render json: { errors: [{ message: "Crop with id #{params[:id]} doesn\'t exists." }] }, status: :not_found
+      render json: { errors: [{ message: "Crop with id #{params[:crop_id]} doesn't exist." }] }, status: :not_found
     end    
   end
 
@@ -34,7 +34,7 @@ class CropDiseasesController < ApplicationController
     @crop_disease = CropDisease.find_by(id: params[:id])
 
     if @crop_disease.nil?
-      render json: { errors: [{ message: "Crop disease with id #{params[:id]} doesn\'t exists." }] }, status: :not_found
+      render json: { errors: [{ message: "Crop disease with id #{params[:id]} doesn't exist." }] }, status: :not_found
     end
   end
 end

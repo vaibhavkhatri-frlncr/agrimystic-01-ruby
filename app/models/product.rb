@@ -1,21 +1,23 @@
 class Product < ApplicationRecord
   belongs_to :category
-  has_one_attached :product_image
   has_many :product_variants, dependent: :destroy
+
   has_many_attached :images
+  has_one_attached :product_image
 
-  accepts_nested_attributes_for :product_variants, allow_destroy: true, reject_if: :all_blank
+  accepts_nested_attributes_for :product_variants, allow_destroy: true
 
+  before_validation :format_fields
+  before_update :check_product_variants_before_update
+  after_save :calculate_product_total_price
+  
   validates :name, :description, :manufacturer, :dosage, :features, presence: true
+  validate :validate_product_name
   validates :code, uniqueness: true, presence: true
   validate :must_have_at_least_one_product_variant
   validate :product_image_presence
   validate :product_image_format
   validate :images_format
-
-  before_update :check_product_variants_before_update
-  after_save :calculate_product_total_price
-  before_validation :format_fields
 
   private
 
@@ -43,53 +45,26 @@ class Product < ApplicationRecord
   def product_image_format
     return unless product_image.attached?
 
-    allowed_types = %w[
-      image/png
-      image/jpg
-      image/jpeg
-      image/gif
-      image/bmp
-      image/webp
-      image/tiff
-      image/x-icon
-      image/vnd.microsoft.icon
-      image/heif
-      image/heic
-      image/svg+xml
-    ]
-
+    allowed_types = %w[image/png image/jpg image/jpeg]
     unless product_image.content_type.in?(allowed_types)
-      errors.add(:product_image, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+      errors.add(:product_image, 'must be a valid image format (PNG, JPG, JPEG)')
     end
   end
 
   def images_format
     return unless images.attached?
 
-    allowed_types = %w[
-      image/png
-      image/jpg
-      image/jpeg
-      image/gif
-      image/bmp
-      image/webp
-      image/tiff
-      image/x-icon
-      image/vnd.microsoft.icon
-      image/heif
-      image/heic
-      image/svg+xml
-    ]
+    allowed_types = %w[image/png image/jpg image/jpeg]
 
     images.each do |image|
       unless image.content_type.in?(allowed_types)
-        errors.add(:images, 'must be a valid image format (PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF, ICO, HEIF, HEIC, SVG)')
+        errors.add(:images, 'must be a valid image format (PNG, JPG, JPEG)')
       end
     end
   end
 
   def must_have_at_least_one_product_variant
-    errors.add(:base, 'Product must have at least one product variant') if product_variants.empty?
+    errors.add(:base, 'Product must have at least one product variant.') if product_variants.empty?
   end
 
   def calculate_product_total_price
@@ -101,8 +76,28 @@ class Product < ApplicationRecord
     variants_to_destroy = product_variants.count(&:marked_for_destruction?)
 
     if variants_to_destroy > 0 && product_variants.reject(&:marked_for_destruction?).empty?
-      errors.add(:base, 'Product must have at least one product variant')
+      errors.add(:base, 'Product must have at least one product variant.')
       throw(:abort)
+    end
+  end
+
+  def validate_product_name
+    value = name.to_s.strip
+
+    return if value.blank?
+
+    if value.length < 2
+      errors.add(:name, "is too short (minimum is 2 characters)")
+      return
+    end
+
+    if value.length > 50
+      errors.add(:name, "is too long (maximum is 50 characters)")
+      return
+    end
+
+    unless value.match?(/\A[a-zA-Z\s]+\z/)
+      errors.add(:name, 'only allows letters and spaces')
     end
   end
 end

@@ -4,7 +4,9 @@ class Stage < ApplicationRecord
 
   accepts_nested_attributes_for :stage_details, allow_destroy: true
 
-  validates :title, presence: true, length: { maximum: 50 }
+  validates :title, presence: true
+  validate :validate_stage_title
+
   validate :must_have_at_least_one_stage_detail
 
   before_validation :titleize_title
@@ -16,6 +18,22 @@ class Stage < ApplicationRecord
   end
 
   def must_have_at_least_one_stage_detail
-    errors.add(:base, 'Stage must have at least one stage detail') if stage_details.empty?
+    errors.add(:base, 'Stage must have at least one stage detail.') if stage_details.empty?
+  end
+
+  def validate_stage_title
+    value = title.to_s.strip
+
+    return if value.blank?
+
+    if value.length < 2
+      errors.add(:title, "is too short (minimum is 2 characters)")
+      return
+    end
+
+    if value.length > 50
+      errors.add(:title, "is too long (maximum is 50 characters)")
+      return
+    end
   end
 end

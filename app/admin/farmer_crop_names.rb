@@ -1,7 +1,7 @@
 ActiveAdmin.register FarmerCropName do
   menu parent: 'Crop Master Data', priority: 1
 
-  permit_params :name, farmer_crop_type_names_attributes: [:id, :name, :_destroy]
+  permit_params :name, :image, farmer_crop_type_names_attributes: [:id, :name, :_destroy]
 
   config.sort_order = 'created_at_desc'
 
@@ -21,12 +21,13 @@ ActiveAdmin.register FarmerCropName do
     end
 
     f.inputs 'Crop Name Details' do
-      f.input :name, placeholder: 'Enter crop name'
+      f.input :name
+      f.input :image, as: :file, required: true, hint: 'Upload image'
     end
 
     f.inputs 'Crop Type Names' do
       f.has_many :farmer_crop_type_names, heading: 'Crop Type Names', new_record: 'Add Type Name', allow_destroy: true do |ct|
-        ct.input :name, placeholder: 'Enter crop type name'
+        ct.input :name
       end
     end
 
@@ -36,6 +37,9 @@ ActiveAdmin.register FarmerCropName do
   show do
     attributes_table do
       row :name
+      row :image do |crop|
+        crop.image.attached? ? (image_tag url_for(crop.image), size: '200x200') : 'No image attached'
+      end
       row :created_at
       row :updated_at
     end
@@ -52,9 +56,17 @@ ActiveAdmin.register FarmerCropName do
 
   index do
     selectable_column
-    column('No.', sortable: :created_at) { |crop| FarmerCropName.order(:created_at).pluck(:id).index(crop.id) + 1 }
+
+    column('No.', sortable: :created_at) do |crop|
+      FarmerCropName.order(:created_at).pluck(:id).index(crop.id) + 1
+    end
+
     column :name
+    column :image do |crop|
+      crop.image.attached? ? (image_tag url_for(crop.image), size: '50x50') : 'No image attached'
+    end
     column('Type Names Count') { |crop| crop.farmer_crop_type_names.count }
+
     actions
   end
 end

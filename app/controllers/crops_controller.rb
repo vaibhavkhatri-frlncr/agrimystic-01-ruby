@@ -7,7 +7,7 @@ class CropsController < ApplicationController
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
 
-    crops = Crop.page(page).per(per_page)
+    crops = Crop.order(created_at: :desc).page(page).per(per_page)
 
     if crops.any?
       render json: {
@@ -37,7 +37,7 @@ class CropsController < ApplicationController
     @crop = Crop.find_by(id: params[:id])
 
     if @crop.nil?
-      render json: { errors: [{ message: "Crop with ID #{params[:id]} doesn\'t exists." }] }, status: :not_found
+      render json: { errors: [{ message: "Crop with id #{params[:id]} doesn't exist." }] }, status: :not_found
     end
   end
 end

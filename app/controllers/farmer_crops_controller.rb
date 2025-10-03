@@ -76,7 +76,7 @@ class FarmerCropsController < ApplicationController
     @farmer_crop = current_user.farmer_crops.find_by(id: params[:id])
 
     if @farmer_crop.nil?
-      render json: { errors: [{ message: "No farmer crop found with ID #{params[:id]} for the current user" }] }, status: :not_found
+      render json: { errors: [{ message: "No farmer crop found with id #{params[:id]} for the current user" }] }, status: :not_found
     end
   end
 
