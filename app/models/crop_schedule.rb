@@ -5,9 +5,8 @@ class CropSchedule < ApplicationRecord
   accepts_nested_attributes_for :stages, allow_destroy: true
 
   before_validation :titleize_heading
-  before_update :check_stages_before_update
+  before_update :check_stages
   
-  validates :heading, presence: true
   validate :validate_crop_schedule_heading
   validate :must_have_at_least_one_stage
   validate :check_stage_details_before_update, on: [:create, :update]
@@ -17,6 +16,15 @@ class CropSchedule < ApplicationRecord
 
   def titleize_heading
     self.heading = heading.to_s.titleize if heading.present?
+  end
+
+  def check_stages
+    stages_to_destroy = stages.count(&:marked_for_destruction?)
+
+    if stages_to_destroy > 0 && stages.reject(&:marked_for_destruction?).empty?
+      errors.add(:base, 'Crop schedule must have at least one stage.')
+      throw(:abort)
+    end
   end
 
   def unique_crop_schedule
@@ -31,15 +39,6 @@ class CropSchedule < ApplicationRecord
     errors.add(:base, 'Crop schedule must have at least one stage.') if stages.empty?
   end
 
-  def check_stages_before_update
-    stages_to_destroy = stages.count(&:marked_for_destruction?)
-
-    if stages_to_destroy > 0 && stages.reject(&:marked_for_destruction?).empty?
-      errors.add(:base, 'Crop schedule must have at least one stage.')
-      throw(:abort)
-    end
-  end
-
   def check_stage_details_before_update
     stages_without_details = stages.count { |stage| stage.stage_details.empty? || stage.stage_details.count(&:marked_for_destruction?) == stage.stage_details.size }
   
@@ -52,7 +51,10 @@ class CropSchedule < ApplicationRecord
   def validate_crop_schedule_heading
     value = heading.to_s.strip
 
-    return if value.blank?
+    if value.blank?
+      errors.add(:heading, "can't be blank")
+      return
+    end
 
     if value.length < 2
       errors.add(:heading, "is too short (minimum is 2 characters)")

@@ -53,14 +53,10 @@ ActiveAdmin.register FarmerCrop do
   show do
     attributes_table do
       row("Crop") do |crop|
-        if crop.farmer_crop_name.present?
-          link_to crop.farmer_crop_name.name, admin_farmer_crop_path(crop)
-        end
+        crop.farmer_crop_name&.name
       end
       row("Type") do |crop|
-        if crop.farmer_crop_type_name.present?
-          link_to crop.farmer_crop_type_name.name, admin_farmer_crop_path(crop)
-        end
+        crop.farmer_crop_type_name&.name
       end
       row :variety
       row :description
@@ -86,6 +82,28 @@ ActiveAdmin.register FarmerCrop do
       row :created_at
       row :updated_at
     end
+
+    panel "Crop Reviews" do
+      if resource.reviews.any?
+        table_for resource.reviews.order(created_at: :desc) do
+          column('No.') do |review|
+            resource.reviews.order(created_at: :desc).pluck(:id).index(review.id) + 1
+          end
+          column("Trader") do |review|
+            link_to review.trader.full_name, admin_trader_path(review.trader)
+          end
+          column("Phone") { |review| review.trader.phone_number if review.trader.present? }
+          column("Address") { |review| review.trader.address if review.trader.present? }
+          column("Rating") { |review| review.rating }
+          column("Review") { |review| review.review }
+          column("Created At") { |review| review.created_at }
+        end
+      else
+        div do
+          span "No reviews associated with this crop."
+        end
+      end
+    end
   end
 
   index do
@@ -106,7 +124,9 @@ ActiveAdmin.register FarmerCrop do
     column :quantity
     column :price
     column :contact_number
-    column('Farmer') { |crop| "#{crop.farmer.first_name} #{crop.farmer.last_name}" }
+    column('Farmer') do |crop|
+      link_to "#{crop.farmer.first_name} #{crop.farmer.last_name}", admin_farmer_path(crop.farmer)
+    end
 
     actions
   end

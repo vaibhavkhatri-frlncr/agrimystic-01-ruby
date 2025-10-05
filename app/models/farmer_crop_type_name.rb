@@ -1,5 +1,6 @@
 class FarmerCropTypeName < ApplicationRecord
   belongs_to :farmer_crop_name
+  has_many :farmer_crops, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :farmer_crop_name_id, case_sensitive: false }
   validate :validate_farmer_crop_type_name

@@ -6,14 +6,11 @@ class Address < ApplicationRecord
 
   enum address_type: { home: 0, office: 1, other: 2 }
 
-  validates :name, :mobile, :pincode, :state, :address, :district, presence: true
-  validate :validate_address_name
-  validate :validate_mobile_format
-  validates :pincode,
-            format: { with: /\A[1-9][0-9]{5}\z/,
-                      message: 'must be a valid 6-digit Indian PIN code' },
-            allow_blank: true
+  validates :pincode, :state, :address, :district, presence: true
+  validates :pincode, format: { with: /\A[1-9][0-9]{5}\z/, message: 'must be a valid 6-digit Indian PIN code' }, allow_blank: true
   validates :address_type, presence: { message: "must be selected" }
+  validate :validate_address_name
+  validate :validate_address_mobile
 
   private
 
@@ -31,7 +28,10 @@ class Address < ApplicationRecord
   def validate_address_name
     value = name.to_s.strip
 
-    return if value.blank?
+    if value.blank?
+      errors.add(:name, "can't be blank")
+      return
+    end
 
     if value.length < 2
       errors.add(:name, "is too short (minimum is 2 characters)")
@@ -49,9 +49,14 @@ class Address < ApplicationRecord
   end
 
   def validate_mobile_format
-    return if mobile.blank?
+    value = mobile.to_s.strip
 
-    unless mobile.to_s.match?(/\A[7-9]\d{9}\z/)
+    if value.blank?
+      errors.add(:mobile, "can't be blank")
+      return
+    end
+
+    unless value.match?(/\A[7-9]\d{9}\z/)
       errors.add(:mobile, "must be a valid 10-digit Indian mobile number starting with 7, 8, or 9")
     end
   end

@@ -1,5 +1,6 @@
 class FarmerCropName < ApplicationRecord
   has_many :farmer_crop_type_names, dependent: :destroy
+  has_many :farmer_crops, dependent: :destroy
 
   has_one_attached :crop_image
 

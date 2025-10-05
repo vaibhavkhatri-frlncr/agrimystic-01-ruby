@@ -1,3 +1,3 @@
 class Trader < Account
-  self.table_name = :accounts
+  has_many :reviews, dependent: :destroy
 end

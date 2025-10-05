@@ -1,7 +1,7 @@
 class FarmerCropsController < ApplicationController
   before_action :validate_json_web_token
   before_action :check_account_activated
-  before_action :ensure_valid_farmer_user, only: [:create, :update, :destroy, :owned]
+  before_action :ensure_valid_farmer_account, only: [:create, :update, :destroy, :owned]
   before_action :load_farmer_crop_name, only: [:index]
   before_action :load_farmer_crop_for_show, only: [:show]
   before_action :load_farmer_crop, only: [:update, :destroy]
@@ -31,7 +31,7 @@ class FarmerCropsController < ApplicationController
   def show
     return if @farmer_crop.nil?
 
-    render json: FarmerCropSerializer.new(@farmer_crop), status: :ok
+    render json: FarmerCropSerializer.new(@farmer_crop, { params: { include_reviews: true, current_user_id: current_user.id } }), status: :ok
   end
 
   def create
@@ -72,7 +72,7 @@ class FarmerCropsController < ApplicationController
 
   private
 
-  def ensure_valid_farmer_user
+  def ensure_valid_farmer_account
     if current_user.is_a?(Trader)
       render json: { errors: [{ message: "Only farmers are allowed to perform this action." }] }, status: :forbidden
     elsif current_user.is_a?(Farmer) && defined?(@farmer_crop) && @farmer_crop.farmer_id != current_user.id
@@ -116,19 +116,6 @@ class FarmerCropsController < ApplicationController
       :contact_number,
       farmer_crop_images: []
     )
-  end
-
-  def apply_filters(scope)
-    if params[:search].present?
-      search_term = "%#{params[:search]}%"
-      scope = scope.joins(:farmer_crop_name, :farmer_crop_type_name)
-                  .where(
-                    "farmer_crop_names.name ILIKE :term OR farmer_crop_type_names.name ILIKE :term",
-                    term: search_term
-                  )
-    end
-
-    scope
   end
 
   def format_activerecord_errors(errors)

@@ -2,6 +2,7 @@ class FarmerCrop < ApplicationRecord
   belongs_to :farmer, class_name: "Farmer"
   belongs_to :farmer_crop_name
   belongs_to :farmer_crop_type_name
+  has_many :reviews, dependent: :destroy
 
   has_many_attached :farmer_crop_images
 
@@ -11,12 +12,11 @@ class FarmerCrop < ApplicationRecord
     Arel.sql("CAST(#{parent.table[:contact_number].name} AS TEXT)")
   end
 
-  validates :quantity, :price, :contact_number, :description, presence: true
-  validate :validate_contact_number_format
   validates :farmer_crop_type_name_id, uniqueness: { scope: [:farmer_id, :farmer_crop_name_id], message: "you have already added this crop and type combination" }
-  validate :farmer_crop_images_presence
-  validate :farmer_crop_images_format
+  validates :quantity, :price, presence: true
+  validate :validate_contact_number
   validate :validate_description
+  validate :validate_farmer_crop_images
 
   private
 
@@ -28,32 +28,38 @@ class FarmerCrop < ApplicationRecord
     str.to_s.capitalize if str.present?
   end
 
-  def validate_contact_number_format
-    return if contact_number.blank?
+  def validate_contact_number
+    if contact_number.blank?
+      errors.add(:contact_number, "can't be blank")
+      return
+    end
 
     unless contact_number.to_s.match?(/\A[7-9]\d{9}\z/)
       errors.add(:contact_number, "must be a valid 10-digit Indian contact number starting with 7, 8, or 9")
     end
   end
 
-  def farmer_crop_images_presence
-    errors.add(:farmer_crop_images, 'must be attached') unless farmer_crop_images.attached?
-  end
-
-  def farmer_crop_images_format
-    return unless farmer_crop_images.attached?
+  def validate_farmer_crop_images
+    unless farmer_crop_images.attached?
+      errors.add(:farmer_crop_images, 'must be attached')
+      return
+    end
 
     allowed_types = %w[image/png image/jpg image/jpeg]
-    farmer_crop_images.each do |image|
-      unless image.content_type.in?(allowed_types)
-        errors.add(:farmer_crop_images, 'must be a valid image format (PNG, JPG, JPEG)')
-      end
+    invalid_image = farmer_crop_images.any? { |image| !image.content_type.in?(allowed_types) }
+
+    if invalid_image
+      errors.add(:farmer_crop_images, 'must be a valid image format (PNG, JPG, JPEG)')
     end
   end
 
   def validate_description
     value = description.to_s.strip
-    return if value.blank?
+
+    if value.blank?
+      errors.add(:description, "can't be blank")
+      return
+    end
 
     if value.length < 5
       errors.add(:description, "is too short (minimum is 5 characters)")
