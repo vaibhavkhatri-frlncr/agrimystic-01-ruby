@@ -3,7 +3,7 @@ class CategoriesController < ApplicationController
   before_action :check_account_activated
 
   def index
-    categories = Category.order(created_at: :desc)
+    categories = Category.all
 
     if categories.present?
       render json: CategorySerializer.new(categories), status: :ok

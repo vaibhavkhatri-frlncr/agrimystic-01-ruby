@@ -1,7 +1,7 @@
 class FarmerCropName < ApplicationRecord
   has_many :farmer_crop_type_names, dependent: :destroy
 
-  has_one_attached :image
+  has_one_attached :crop_image
 
   accepts_nested_attributes_for :farmer_crop_type_names, allow_destroy: true
 
@@ -10,22 +10,22 @@ class FarmerCropName < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validate :validate_farmer_crop_name
-  validate :image_presence
-  validate :image_format
+  validate :crop_image_presence
+  validate :crop_image_format
   validate :must_have_at_least_one_type
 
   private
 
-  def image_presence
-    errors.add(:image, 'must be attached') unless image.attached?
+  def crop_image_presence
+    errors.add(:crop_image, 'must be attached') unless crop_image.attached?
   end
 
-  def image_format
-    return unless image.attached?
+  def crop_image_format
+    return unless crop_image.attached?
 
     allowed_types = %w[image/png image/jpg image/jpeg]
-    unless image.content_type.in?(allowed_types)
-      errors.add(:image, 'must be a valid image format (PNG, JPG, JPEG)')
+    unless crop_image.content_type.in?(allowed_types)
+      errors.add(:crop_image, 'must be a valid image format (PNG, JPG, JPEG)')
     end
   end
 

@@ -4,7 +4,7 @@ class OrdersController < ApplicationController
   before_action :set_order, only: %i[cancel process_payment payment_verification]
 
   def index
-    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc)
+    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {})
 
     if orders.any?
       render json: OrderSerializer.new(orders).serializable_hash, status: :ok

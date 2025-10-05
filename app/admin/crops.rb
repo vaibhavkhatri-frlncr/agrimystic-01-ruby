@@ -26,7 +26,7 @@ ActiveAdmin.register Crop do
     end
     f.actions
   end
-  
+
   show do
     attributes_table do
       row :name

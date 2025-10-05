@@ -35,13 +35,17 @@ Rails.application.routes.draw do
 
   resources :addresses, only: [:index, :show, :create, :update, :destroy] do
     collection do
-      get 'google_maps_api_key', to: 'addresses#google_maps_api_key'
+      get :google_maps_api_key
     end
   end
 
   resources :farmer_crop_names, only: [:index, :show]
-  resources :farmer_crops, only: [:index, :show, :create, :update, :destroy]
-  get 'farmer_crop/current_farmer_crops', to: 'farmer_crops#current_farmer_crops'
+
+  resources :farmer_crops, only: [:index, :show, :create, :update, :destroy] do
+    collection do
+      get :owned
+    end
+  end
 
   post 'cart/add_to_cart', to: 'carts#add_to_cart'
   post 'cart/remove_from_cart', to: 'carts#remove_from_cart'
@@ -52,5 +56,4 @@ Rails.application.routes.draw do
   post 'orders/:id/process_payment', to: 'orders#process_payment'
   get 'order/razorpay_api_key', to: 'orders#razorpay_api_key'
   post 'orders/:id/payment_verification', to: 'orders#payment_verification'
-
 end

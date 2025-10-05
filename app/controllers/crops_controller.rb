@@ -4,22 +4,10 @@ class CropsController < ApplicationController
   before_action :load_crop, only: [:show]
 
   def index
-    page     = params[:page] || 1
-    per_page = params[:per_page] || 10
-
-    crops = Crop.order(created_at: :desc).page(page).per(per_page)
+    crops = Crop.all
 
     if crops.any?
-      render json: {
-        crops: CropSerializer.new(crops),
-        meta: {
-          current_page: crops.current_page,
-          next_page: crops.next_page,
-          prev_page: crops.prev_page,
-          total_pages: crops.total_pages,
-          total_count: crops.total_count
-        }
-      }, status: :ok
+      render json: { crops: CropSerializer.new(crops) }, status: :ok
     else
       render json: { errors: [{ message: 'No crops found.' }] }, status: :not_found
     end

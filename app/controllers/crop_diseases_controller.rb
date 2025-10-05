@@ -5,12 +5,12 @@ class CropDiseasesController < ApplicationController
   before_action :load_crop_disease, only: [:show]
 
   def index
-    crop_diseases = @crop.crop_diseases.order(created_at: :desc)
+    crop_diseases = @crop.crop_diseases
 
     if crop_diseases.present?
       render json: CropDiseaseSerializer.new(crop_diseases), status: :ok
     else
-      render json: { errors: [{ message: "Crop diseases for crop id #{params[:id]} don't exist." }] }, status: :not_found
+      render json: { errors: [{ message: "Crop diseases for crop id #{params[:crop_id]} doesn't exist." }] }, status: :not_found
     end
   end
 

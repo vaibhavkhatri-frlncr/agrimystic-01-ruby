@@ -1,7 +1,7 @@
 ActiveAdmin.register FarmerCropName do
   menu parent: 'Crop Master Data', priority: 1
 
-  permit_params :name, :image, farmer_crop_type_names_attributes: [:id, :name, :_destroy]
+  permit_params :name, :crop_image, farmer_crop_type_names_attributes: [:id, :name, :_destroy]
 
   config.sort_order = 'created_at_desc'
 
@@ -20,13 +20,13 @@ ActiveAdmin.register FarmerCropName do
       end
     end
 
-    f.inputs 'Crop Name Details' do
+    f.inputs 'Farmer Crop Name Details' do
       f.input :name
-      f.input :image, as: :file, required: true, hint: 'Upload image'
+      f.input :crop_image, as: :file, required: true, hint: 'Upload crop image'
     end
 
-    f.inputs 'Crop Type Names' do
-      f.has_many :farmer_crop_type_names, heading: 'Crop Type Names', new_record: 'Add Type Name', allow_destroy: true do |ct|
+    f.inputs 'Farmer Crop Type Names' do
+      f.has_many :farmer_crop_type_names, allow_destroy: true, new_record: true do |ct|
         ct.input :name
       end
     end
@@ -37,14 +37,14 @@ ActiveAdmin.register FarmerCropName do
   show do
     attributes_table do
       row :name
-      row :image do |crop|
-        crop.image.attached? ? (image_tag url_for(crop.image), size: '200x200') : 'No image attached'
+      row :crop_image do |farmer_crop_name|
+        farmer_crop_name.crop_image.attached? ? (image_tag url_for(farmer_crop_name.crop_image), size: '200x200') : 'No image attached'
       end
       row :created_at
       row :updated_at
     end
 
-    panel 'Crop Type Names' do
+    panel 'Farmer Crop Type Names' do
       table_for farmer_crop_name.farmer_crop_type_names.order(:created_at) do
         column('No.') { |ct| farmer_crop_name.farmer_crop_type_names.order(:created_at).index(ct) + 1 }
         column :name
@@ -62,10 +62,10 @@ ActiveAdmin.register FarmerCropName do
     end
 
     column :name
-    column :image do |crop|
-      crop.image.attached? ? (image_tag url_for(crop.image), size: '50x50') : 'No image attached'
+    column :crop_image do |farmer_crop_name|
+      farmer_crop_name.crop_image.attached? ? (image_tag url_for(farmer_crop_name.crop_image), size: '50x50') : 'No image attached'
     end
-    column('Type Names Count') { |crop| crop.farmer_crop_type_names.count }
+    column('Type Names Count') { |farmer_crop_name| farmer_crop_name.farmer_crop_type_names.count }
 
     actions
   end

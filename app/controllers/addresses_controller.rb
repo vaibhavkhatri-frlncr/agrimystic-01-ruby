@@ -4,7 +4,7 @@ class AddressesController < ApplicationController
   before_action :load_address, only: [:show, :update, :destroy]
 
   def index
-    addresses = current_user.addresses.order(created_at: :desc)
+    addresses = current_user.addresses
 
     if addresses.present?
       render json: AddressSerializer.new(addresses), status: :ok
@@ -83,7 +83,7 @@ class AddressesController < ApplicationController
     @address = current_user.addresses.find_by(id: params[:id])
 
     if @address.nil?
-      render json: { errors: [{ message: "Address with id #{params[:id]} doesn't exists for the current user." }] }, status: :not_found
+      render json: { errors: [{ message: "Address with id #{params[:id]} doesn't exist for the current user." }] }, status: :not_found
     end
   end
 
