@@ -48,7 +48,7 @@ class Address < ApplicationRecord
     end
   end
 
-  def validate_mobile_format
+  def validate_address_mobile
     value = mobile.to_s.strip
 
     if value.blank?
