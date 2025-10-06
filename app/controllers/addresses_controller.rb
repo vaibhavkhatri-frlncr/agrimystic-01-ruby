@@ -3,6 +3,9 @@ class AddressesController < ApplicationController
   before_action :check_account_activated
   before_action :load_address, only: [:show, :update, :destroy]
 
+  skip_before_action :validate_json_web_token, only: [:google_maps_api_key]
+  skip_before_action :check_account_activated, only: [:google_maps_api_key]
+
   def index
     addresses = current_user.addresses
 
