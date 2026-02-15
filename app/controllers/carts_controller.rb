@@ -41,19 +41,34 @@ class CartsController < ApplicationController
   end
 
   def get_cart_products
-    cart_products = @cart.cart_products
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    cart_products = @cart.cart_products.order(created_at: :desc).page(page).per(per_page)
 
     if cart_products.present?
-      render json: CartProductSerializer.new(cart_products, meta: { cart_total_price: @cart.total_price }), status: :ok
+      render json: {
+        cart_products: CartProductSerializer.new(cart_products),
+        meta: {
+          cart_total_price: @cart.total_price,
+          current_page: cart_products.current_page,
+          next_page: cart_products.next_page,
+          prev_page: cart_products.prev_page,
+          total_pages: cart_products.total_pages,
+          total_count: cart_products.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: "No cart products found." }] }, status: :not_found
+      render json: {
+        errors: [{ message: "No cart products found." }]
+      }, status: :not_found
     end
   end
 
   private
 
   def load_cart
-    @cart = current_user.cart || Cart.create(account_id: current_user.id)
+    @cart = current_user.cart || Cart.create(farmer_id: current_user.id)
   end
 
   def render_cart_error(message)

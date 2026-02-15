@@ -7,12 +7,26 @@ class AddressesController < ApplicationController
   skip_before_action :check_account_activated, only: [:google_maps_api_key]
 
   def index
-    addresses = current_user.addresses
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    addresses = current_user.addresses.order(created_at: :desc).page(page).per(per_page)
 
     if addresses.present?
-      render json: AddressSerializer.new(addresses), status: :ok
+      render json: {
+        addresses: AddressSerializer.new(addresses),
+        meta: {
+          current_page: addresses.current_page,
+          next_page: addresses.next_page,
+          prev_page: addresses.prev_page,
+          total_pages: addresses.total_pages,
+          total_count: addresses.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: 'No addresses found.' }] }, status: :not_found
+      render json: {
+        errors: [{ message: 'No addresses found.' }]
+      }, status: :not_found
     end
   end
 

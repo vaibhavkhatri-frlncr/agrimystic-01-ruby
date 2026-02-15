@@ -5,13 +5,34 @@ class ProductsController < ApplicationController
   before_action :load_product, only: [:show]
 
   def index
-    products = @category.present? ? @category.products : Product.all
-    products = products.order(created_at: :desc)
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
 
-    if products.any?
-      render json: { products: ProductSerializer.new(products) }, status: :ok
+    products = @category.present? ? @category.products : Product.all
+    products = products.order(created_at: :desc).page(page).per(per_page)
+
+    if products.present?
+      render json: {
+        products: ProductSerializer.new(products),
+        meta: {
+          current_page: products.current_page,
+          next_page: products.next_page,
+          prev_page: products.prev_page,
+          total_pages: products.total_pages,
+          total_count: products.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: 'No products found.' }] }, status: :not_found
+      error_message =
+        if params[:category_id].present?
+          "Products for category id #{params[:category_id]} doesn't exist."
+        else
+          "No products found."
+        end
+
+      render json: {
+        errors: [{ message: error_message }]
+      }, status: :not_found
     end
   end
 

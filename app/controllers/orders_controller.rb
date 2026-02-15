@@ -4,12 +4,25 @@ class OrdersController < ApplicationController
   before_action :set_order, only: %i[cancel process_payment payment_verification]
 
   def index
-    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {})
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
 
-    if orders.any?
-      render json: OrderSerializer.new(orders).serializable_hash, status: :ok
+    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc).page(page).per(per_page)
+
+    if orders.present?
+      render json: OrderSerializer.new(orders).serializable_hash.merge(
+        meta: {
+          current_page: orders.current_page,
+          next_page: orders.next_page,
+          prev_page: orders.prev_page,
+          total_pages: orders.total_pages,
+          total_count: orders.total_count
+        }
+      ), status: :ok
     else
-      render json: { errors: [{ message: 'No orders found.' }] }, status: :not_found
+      render json: {
+        errors: [{ message: 'No orders found.' }]
+      }, status: :not_found
     end
   end
 
@@ -90,7 +103,7 @@ class OrdersController < ApplicationController
   def cancel
     return render(json: { errors: [{ message: 'Order not found.' }] }, status: :not_found) unless @order
     return render(json: { errors: [{ message: 'Order is already cancelled.' }] }, status: :unprocessable_entity) if @order.cancelled?
-    return render(json: { errors: [{ message: 'Order cannot be cancelled now.' }] }, status: :unprocessable_entity) unless @order.placed?
+    return render(json: { errors: [{ message: 'Order cannot be cancelled now.' }] }, status: :unprocessable_entity) unless @order.cancelable?
 
     ActiveRecord::Base.transaction do
       @order.update!(order_status: 'cancelled', cancelled_at: Time.current)

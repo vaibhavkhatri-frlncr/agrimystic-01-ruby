@@ -23,7 +23,5 @@ class ProductSerializer < BaseSerializer
     end
   end
   
-  attributes :created_at, :updated_at
-  
-  attribute :product_variants
+  attributes :created_at, :updated_at, :product_variants
 end

@@ -48,11 +48,4 @@ class FarmerCropSerializer < BaseSerializer
   end
 
   attributes :created_at, :updated_at
-  
-  attribute :reviews, if: proc { |_record, params| params && params[:include_reviews] } do |farmer_crop, params|
-    ReviewSerializer.new(
-      farmer_crop.reviews.order(created_at: :desc),
-      { params: { current_user_id: params[:current_user_id] } }
-    ).serializable_hash[:data].map { |d| d[:attributes] }
-  end
 end

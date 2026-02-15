@@ -5,12 +5,28 @@ class CropDiseasesController < ApplicationController
   before_action :load_crop_disease, only: [:show]
 
   def index
-    crop_diseases = @crop.crop_diseases
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    crop_diseases = @crop.crop_diseases.order(created_at: :desc).page(page).per(per_page)
 
     if crop_diseases.present?
-      render json: CropDiseaseSerializer.new(crop_diseases), status: :ok
+      render json: {
+        crop_diseases: CropDiseaseSerializer.new(crop_diseases),
+        meta: {
+          current_page: crop_diseases.current_page,
+          next_page: crop_diseases.next_page,
+          prev_page: crop_diseases.prev_page,
+          total_pages: crop_diseases.total_pages,
+          total_count: crop_diseases.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: "Crop diseases for crop id #{params[:crop_id]} doesn't exist." }] }, status: :not_found
+      render json: {
+        errors: [{
+          message: "Crop diseases for crop id #{params[:crop_id]} doesn't exist."
+        }]
+      }, status: :not_found
     end
   end
 

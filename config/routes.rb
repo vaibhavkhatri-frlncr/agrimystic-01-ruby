@@ -49,6 +49,8 @@ Rails.application.routes.draw do
 
   resources :reviews, only: [:index, :create, :destroy]
 
+  resources :enquiries, only: [:index, :create, :destroy]
+
   post 'cart/add_to_cart', to: 'carts#add_to_cart'
   post 'cart/remove_from_cart', to: 'carts#remove_from_cart'
   get 'cart/get_cart_products', to: 'carts#get_cart_products'

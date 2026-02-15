@@ -14,7 +14,9 @@ class ReviewSerializer < BaseSerializer
   end
 
   attribute :is_created_by_me do |object, params|
-    params && params[:current_user_id].present? && object.trader_id == params[:current_user_id]
+    params &&
+    params[:current_user_id].present? &&
+    object.trader_id == params[:current_user_id]
   end
 
   attributes :created_at, :updated_at

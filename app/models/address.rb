@@ -1,5 +1,5 @@
 class Address < ApplicationRecord
-  belongs_to :farmer, class_name: "Farmer"
+  belongs_to :farmer, class_name: 'Farmer'
   has_many :orders
 
   before_validation :titleize_address_fields

@@ -31,7 +31,7 @@ class FarmerCropsController < ApplicationController
   def show
     return if @farmer_crop.nil?
 
-    render json: FarmerCropSerializer.new(@farmer_crop, { params: { include_reviews: true, current_user_id: current_user.id } }), status: :ok
+    render json: FarmerCropSerializer.new(@farmer_crop), status: :ok
   end
 
   def create
@@ -61,12 +61,26 @@ class FarmerCropsController < ApplicationController
   end
 
   def owned
-    farmer_crops = current_user.farmer_crops.includes(:farmer_crop_name, :farmer_crop_type_name)
+    page     = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    farmer_crops = current_user.farmer_crops.includes(:farmer_crop_name, :farmer_crop_type_name).order(created_at: :desc).page(page).per(per_page)
 
     if farmer_crops.present?
-      render json: FarmerCropSerializer.new(farmer_crops), status: :ok
+      render json: {
+        farmer_crops: FarmerCropSerializer.new(farmer_crops),
+        meta: {
+          current_page: farmer_crops.current_page,
+          next_page: farmer_crops.next_page,
+          prev_page: farmer_crops.prev_page,
+          total_pages: farmer_crops.total_pages,
+          total_count: farmer_crops.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: 'You have not posted any crops yet.' }] }, status: :not_found
+      render json: {
+        errors: [{ message: 'You have not posted any crops yet.' }]
+      }, status: :not_found
     end
   end
 

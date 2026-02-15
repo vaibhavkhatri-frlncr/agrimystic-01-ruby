@@ -1,8 +1,9 @@
 class FarmerCrop < ApplicationRecord
-  belongs_to :farmer, class_name: "Farmer"
+  belongs_to :farmer, class_name: 'Farmer'
   belongs_to :farmer_crop_name
   belongs_to :farmer_crop_type_name
   has_many :reviews, dependent: :destroy
+  has_many :enquiries, dependent: :destroy
 
   has_many_attached :farmer_crop_images
 

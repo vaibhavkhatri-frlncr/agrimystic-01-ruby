@@ -6,12 +6,32 @@ class ReviewsController < ApplicationController
   before_action :ensure_valid_trader_account, only: [:create, :destroy]
 
   def index
+    page = params[:page] || 1
+    per_page = params[:per_page] || 10
+
     reviews = @farmer_crop.reviews.order(created_at: :desc)
-  
-    if reviews.present?
-      render json: ReviewSerializer.new(reviews, { params: { current_user_id: current_user.id } }), status: :ok
+    paginated_reviews = reviews.page(page).per(per_page)
+
+    if paginated_reviews.present?
+      render json: {
+        reviews: ReviewSerializer.new(
+          paginated_reviews,
+          { params: { current_user_id: current_user.id } }
+        ),
+        meta: {
+          current_page: paginated_reviews.current_page,
+          next_page: paginated_reviews.next_page,
+          prev_page: paginated_reviews.prev_page,
+          total_pages: paginated_reviews.total_pages,
+          total_count: paginated_reviews.total_count
+        }
+      }, status: :ok
     else
-      render json: { errors: [{ message: "Reviews for farmer crop id #{params[:farmer_crop_id]} doesn't exist." }] }, status: :not_found
+      render json: {
+        errors: [
+          { message: "Reviews for farmer crop id #{params[:farmer_crop_id]} doesn't exist." }
+        ]
+      }, status: :not_found
     end
   end
 
