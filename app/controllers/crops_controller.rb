@@ -6,8 +6,15 @@ class CropsController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    crops = Crop.order(created_at: :desc).page(page).per(per_page)
+    crops = Crop.order(created_at: :desc)
+
+    if search.present?
+      crops = crops.where("LOWER(name) LIKE ?", "%#{search.downcase}%")
+    end
+
+    crops = crops.page(page).per(per_page)
 
     if crops.present?
       render json: {
@@ -21,7 +28,14 @@ class CropsController < ApplicationController
         }
       }, status: :ok
     else
-      render json: { errors: [{ message: 'No crops found.' }] }, status: :not_found
+      error_message = "No crops found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
+      render json: {
+        errors: [{ message: error_message }]
+      }, status: :not_found
     end
   end
 

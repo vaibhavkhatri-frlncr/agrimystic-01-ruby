@@ -6,8 +6,35 @@ class OrdersController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    orders = current_user.orders.includes(order_products: { product_variant: :product }, address: {}).order(created_at: :desc).page(page).per(per_page)
+    orders = current_user.orders
+                          .includes(order_products: { product_variant: :product }, address: {})
+                          .joins(order_products: { product_variant: :product })
+                          .joins(:address)
+                          .order(created_at: :desc)
+                          .distinct
+
+    if search.present?
+      orders = orders.where(
+        "LOWER(orders.payment_method) LIKE :search
+        OR LOWER(orders.payment_status) LIKE :search
+        OR LOWER(orders.order_status) LIKE :search
+        OR CAST(orders.total_amount AS TEXT) LIKE :search
+        OR LOWER(products.name) LIKE :search
+        OR LOWER(products.description) LIKE :search
+        OR LOWER(products.code) LIKE :search
+        OR LOWER(product_variants.size) LIKE :search
+        OR LOWER(addresses.name) LIKE :search
+        OR CAST(addresses.mobile AS TEXT) LIKE :search
+        OR LOWER(addresses.state) LIKE :search
+        OR LOWER(addresses.district) LIKE :search
+        OR LOWER(addresses.address) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    orders = orders.page(page).per(per_page)
 
     if orders.present?
       render json: OrderSerializer.new(orders).serializable_hash.merge(
@@ -20,8 +47,13 @@ class OrdersController < ApplicationController
         }
       ), status: :ok
     else
+      error_message = "No orders found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{ message: 'No orders found.' }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

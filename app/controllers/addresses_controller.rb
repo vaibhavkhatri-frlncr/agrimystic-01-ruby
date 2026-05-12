@@ -9,8 +9,23 @@ class AddressesController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    addresses = current_user.addresses.order(created_at: :desc).page(page).per(per_page)
+    addresses = current_user.addresses.order(created_at: :desc)
+
+    if search.present?
+      addresses = addresses.where(
+        "LOWER(name) LIKE :search
+        OR CAST(mobile AS TEXT) LIKE :search
+        OR LOWER(pincode) LIKE :search
+        OR LOWER(state) LIKE :search
+        OR LOWER(address) LIKE :search
+        OR LOWER(district) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    addresses = addresses.page(page).per(per_page)
 
     if addresses.present?
       render json: {
@@ -24,8 +39,13 @@ class AddressesController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "No addresses found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{ message: 'No addresses found.' }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

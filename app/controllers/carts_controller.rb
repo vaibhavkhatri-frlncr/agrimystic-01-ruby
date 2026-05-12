@@ -43,8 +43,26 @@ class CartsController < ApplicationController
   def get_cart_products
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    cart_products = @cart.cart_products.order(created_at: :desc).page(page).per(per_page)
+    cart_products = @cart.cart_products
+                          .joins(product_variant: :product)
+                          .order(created_at: :desc)
+
+    if search.present?
+      cart_products = cart_products.where(
+        "LOWER(products.name) LIKE :search
+        OR LOWER(products.description) LIKE :search
+        OR LOWER(products.code) LIKE :search
+        OR LOWER(products.manufacturer) LIKE :search
+        OR LOWER(products.dosage) LIKE :search
+        OR LOWER(products.features) LIKE :search
+        OR LOWER(product_variants.size) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    cart_products = cart_products.page(page).per(per_page)
 
     if cart_products.present?
       render json: {
@@ -59,8 +77,13 @@ class CartsController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "No cart products found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{ message: "No cart products found." }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

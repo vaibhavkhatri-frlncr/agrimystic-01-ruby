@@ -7,8 +7,21 @@ class CropDiseasesController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    crop_diseases = @crop.crop_diseases.order(created_at: :desc).page(page).per(per_page)
+    crop_diseases = @crop.crop_diseases.order(created_at: :desc)
+
+    if search.present?
+      crop_diseases = crop_diseases.where(
+        "LOWER(name) LIKE :search
+        OR LOWER(cause) LIKE :search
+        OR LOWER(solution) LIKE :search
+        OR LOWER(products_recommended) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    crop_diseases = crop_diseases.page(page).per(per_page)
 
     if crop_diseases.present?
       render json: {
@@ -22,10 +35,13 @@ class CropDiseasesController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "No crop diseases found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{
-          message: "Crop diseases for crop id #{params[:crop_id]} doesn't exist."
-        }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

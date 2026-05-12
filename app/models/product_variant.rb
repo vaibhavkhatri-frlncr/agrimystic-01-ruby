@@ -1,6 +1,7 @@
 class ProductVariant < ApplicationRecord
   belongs_to :product
-  has_many :cart_product
+  has_many :cart_products, dependent: :destroy
+  has_many :order_products, dependent: :destroy
 
   validates :size, :price, :quantity, presence: true
   validate :validate_quantity_greater_than_zero

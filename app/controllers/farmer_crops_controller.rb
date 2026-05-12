@@ -9,8 +9,29 @@ class FarmerCropsController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    farmer_crops = FarmerCrop.includes(:farmer_crop_name, :farmer_crop_type_name, :farmer).where(farmer_crop_name_id: @farmer_crop_name.id).order(created_at: :desc).page(page).per(per_page)
+    farmer_crops = FarmerCrop
+                      .includes(:farmer_crop_name, :farmer_crop_type_name, :farmer)
+                      .joins(:farmer_crop_name, :farmer_crop_type_name)
+                      .where(farmer_crop_name_id: @farmer_crop_name.id)
+                      .order(created_at: :desc)
+
+    if search.present?
+      farmer_crops = farmer_crops.where(
+        "LOWER(farmer_crops.variety) LIKE :search
+        OR LOWER(farmer_crops.description) LIKE :search
+        OR LOWER(farmer_crops.moisture_content) LIKE :search
+        OR LOWER(farmer_crops.quantity) LIKE :search
+        OR LOWER(farmer_crops.price) LIKE :search
+        OR CAST(farmer_crops.contact_number AS TEXT) LIKE :search
+        OR LOWER(farmer_crop_names.name) LIKE :search
+        OR LOWER(farmer_crop_type_names.name) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    farmer_crops = farmer_crops.page(page).per(per_page)
 
     if farmer_crops.present?
       render json: {
@@ -24,7 +45,15 @@ class FarmerCropsController < ApplicationController
         }
       }, status: :ok
     else
-      render json: { errors: [{ message: "Farmer crops for farmer crop name id #{params[:farmer_crop_name_id]} doesn't exist." }] }, status: :not_found
+      error_message =
+        "Farmer crops for farmer crop name id #{params[:farmer_crop_name_id]} not found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
+      render json: {
+        errors: [{ message: error_message }]
+      }, status: :not_found
     end
   end
 
@@ -63,8 +92,28 @@ class FarmerCropsController < ApplicationController
   def owned
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    farmer_crops = current_user.farmer_crops.includes(:farmer_crop_name, :farmer_crop_type_name).order(created_at: :desc).page(page).per(per_page)
+    farmer_crops = current_user.farmer_crops
+                                .includes(:farmer_crop_name, :farmer_crop_type_name)
+                                .joins(:farmer_crop_name, :farmer_crop_type_name)
+                                .order(created_at: :desc)
+
+    if search.present?
+      farmer_crops = farmer_crops.where(
+        "LOWER(farmer_crops.variety) LIKE :search
+        OR LOWER(farmer_crops.description) LIKE :search
+        OR LOWER(farmer_crops.moisture_content) LIKE :search
+        OR LOWER(farmer_crops.quantity) LIKE :search
+        OR LOWER(farmer_crops.price) LIKE :search
+        OR CAST(farmer_crops.contact_number AS TEXT) LIKE :search
+        OR LOWER(farmer_crop_names.name) LIKE :search
+        OR LOWER(farmer_crop_type_names.name) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    farmer_crops = farmer_crops.page(page).per(per_page)
 
     if farmer_crops.present?
       render json: {
@@ -78,8 +127,13 @@ class FarmerCropsController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "You have not posted any crops yet"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{ message: 'You have not posted any crops yet.' }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

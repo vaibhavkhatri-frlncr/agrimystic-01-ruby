@@ -5,8 +5,18 @@ class CategoriesController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    categories = Category.order(created_at: :desc).page(page).per(per_page)
+    categories = Category.order(created_at: :desc)
+
+    if search.present?
+      categories = categories.where(
+        "LOWER(name) LIKE ?",
+        "%#{search.downcase}%"
+      )
+    end
+
+    categories = categories.page(page).per(per_page)
 
     if categories.present?
       render json: {
@@ -20,8 +30,13 @@ class CategoriesController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "No categories found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+      
       render json: {
-        errors: [{ message: 'No categories found.' }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

@@ -7,8 +7,22 @@ class ProductsController < ApplicationController
   def index
     page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
     products = @category.present? ? @category.products : Product.all
+
+    if search.present?
+      products = products.where(
+        "LOWER(name) LIKE :search
+        OR LOWER(description) LIKE :search
+        OR LOWER(code) LIKE :search
+        OR LOWER(manufacturer) LIKE :search
+        OR LOWER(dosage) LIKE :search
+        OR LOWER(features) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
     products = products.order(created_at: :desc).page(page).per(per_page)
 
     if products.present?
@@ -25,10 +39,13 @@ class ProductsController < ApplicationController
     else
       error_message =
         if params[:category_id].present?
-          "Products for category id #{params[:category_id]} doesn't exist."
+          "No products found for category id #{params[:category_id]}"
         else
-          "No products found."
+          "No products found"
         end
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
 
       render json: {
         errors: [{ message: error_message }]

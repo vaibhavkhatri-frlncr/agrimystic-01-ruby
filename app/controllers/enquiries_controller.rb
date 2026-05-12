@@ -7,10 +7,30 @@ class EnquiriesController < ApplicationController
   before_action :ensure_valid_farmer_account, only: [:index, :destroy]
 
   def index
-    page = params[:page] || 1
+    page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    enquiries = Enquiry.joins(:farmer_crop).where(farmer_crops: { farmer_id: current_user.id }).order(created_at: :desc).page(page).per(per_page)
+    enquiries = Enquiry
+                  .joins(:farmer_crop, :trader)
+                  .where(farmer_crops: { farmer_id: current_user.id })
+                  .order(created_at: :desc)
+
+    if search.present?
+      enquiries = enquiries.where(
+        "LOWER(enquiries.message) LIKE :search
+        OR LOWER(farmer_crops.variety) LIKE :search
+        OR LOWER(farmer_crops.description) LIKE :search
+        OR CAST(farmer_crops.quantity AS TEXT) LIKE :search
+        OR CAST(farmer_crops.price AS TEXT) LIKE :search
+        OR LOWER(accounts.first_name) LIKE :search
+        OR LOWER(accounts.last_name) LIKE :search
+        OR LOWER(accounts.email) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
+    enquiries = enquiries.page(page).per(per_page)
 
     if enquiries.present?
       render json: {
@@ -24,8 +44,13 @@ class EnquiriesController < ApplicationController
         }
       }, status: :ok
     else
+      error_message = "No enquiries found"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [{ message: 'No enquiries found.' }]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end

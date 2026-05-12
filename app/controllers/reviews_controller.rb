@@ -6,10 +6,25 @@ class ReviewsController < ApplicationController
   before_action :ensure_valid_trader_account, only: [:create, :destroy]
 
   def index
-    page = params[:page] || 1
+    page     = params[:page] || 1
     per_page = params[:per_page] || 10
+    search   = params[:search]
 
-    reviews = @farmer_crop.reviews.order(created_at: :desc)
+    reviews = @farmer_crop.reviews
+                          .joins(:trader)
+                          .order(created_at: :desc)
+
+    if search.present?
+      reviews = reviews.where(
+        "CAST(reviews.rating AS TEXT) LIKE :search
+        OR LOWER(reviews.review) LIKE :search
+        OR LOWER(accounts.first_name) LIKE :search
+        OR LOWER(accounts.last_name) LIKE :search
+        OR LOWER(accounts.email) LIKE :search",
+        search: "%#{search.downcase}%"
+      )
+    end
+
     paginated_reviews = reviews.page(page).per(per_page)
 
     if paginated_reviews.present?
@@ -27,10 +42,14 @@ class ReviewsController < ApplicationController
         }
       }, status: :ok
     else
+      error_message =
+        "No reviews found for farmer crop id #{params[:farmer_crop_id]}"
+
+      error_message += " matching '#{search}'" if search.present?
+      error_message += "."
+
       render json: {
-        errors: [
-          { message: "Reviews for farmer crop id #{params[:farmer_crop_id]} doesn't exist." }
-        ]
+        errors: [{ message: error_message }]
       }, status: :not_found
     end
   end
